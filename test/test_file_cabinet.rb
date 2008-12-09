@@ -6,7 +6,7 @@ require 'file_cabinet'
 
 class TestFileCabinet < Test::Unit::TestCase
   def setup
-     # Setup Test-files dir
+    # TODO This is totally unacceptable!
     FileUtils.mkdir_p(File.expand_path(File.dirname(__FILE__) + '/data/tmp/xyz/original'))
     FileUtils.mkdir_p(File.expand_path(File.dirname(__FILE__) + '/data/tmp/empty'))
     @tmp_file = FileUtils.touch(File.expand_path(File.dirname(__FILE__) + '/data/tmp/xyz/original/testfile')).first
