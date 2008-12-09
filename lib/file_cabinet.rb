@@ -1,6 +1,19 @@
-# Provides an interface to manage Files in an ActiveRecord-like way
-# By now the original file must be remained saved in :id/original/:basename ,
-# where :id and :basename can be anything
+# Provides an interface to manage Files in a folder
+# TODO save different styles of a file (compare with Paperclip)
+# 
+# Usage
+# To create a new FileCabinet point it to an EXISTING Folder
+# cabinet = FileCabinet.new("~/app/data/files")
+# Use .add_file To save a file in the FileCabinet
+# cabinet.add_file("/tmp/yxz/test.jpg")
+# The file gets saved into a randomly named folder
+# Use .find to find a folder 
+# folder = cabinet.find("xyz")
+# use .file to get the actual file, saved in the folder
+# File.file?(folder.file) # should return true
+# use folder.destroy to delte a folder/file
+# folder.destroy
+
 require 'fileutils'
 require 'file_cabinet/file_folder'
 
@@ -26,16 +39,12 @@ class FileCabinet
   end
   
   # Add a file to the cabinet
-  def add_file(file)    
-    # TODO make nice, move to proper factory method...
-    newid = "deleteme#{rand}" # test..
-    # file_extension = self.file.original_filename[/\w{1,8}$/].downcase
-    # self.permalink = "#{Time.now.to_i}#{rand(9)}".to_i.to_s(36).sub("-","s") +"-" + file_extension    
+  def add_file(file)        
+    newid = "#{Time.now.to_i}#{rand(9)}".to_i.to_s(36).sub("-","s") + "-" + File.extname(file).downcase    
     
-    FileUtils.mkdir(path = "#{@files_path}/#{newid}")
-    FileUtils.mkdir("#{path}/#{@original_foldername}")
-    FileUtils.cp(file, "#{path}/#{@original_foldername}")
-    FileFolder.new(path, "#{path}/#{@original_foldername}/#{File.basename(file)}")
+    FileUtils.mkdir_p(orig_folder = (path = "#{@files_path}/#{newid}") + "/#{@original_foldername}")
+    FileUtils.cp(file, orig_folder)
+    FileFolder.new(path, "#{orig_folder}/#{File.basename(file)}")
   end
   
   private
