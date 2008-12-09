@@ -69,12 +69,11 @@ __END__
 
 @@ index
 <h2>Share a file</h2>
-<form action="/" enctype="multipart/form-data" id="new_share" method="post">    
+<form action="/" enctype="multipart/form-data" method="post">    
   <p>
     <label for="share_file">File</label>
-    <input name="file" size="30" type="file" />
-    <br />
-    The file will be destroyed after two days!
+    <input name="file" size="30" type="file" />        
+    <p>The file will be destroyed after two days!</p>
   </p>
   <p>
     <input class="upload_file" name="commit" type="submit" value="Upload the file" />
