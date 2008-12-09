@@ -1,7 +1,11 @@
 require 'rubygems'
 require 'sinatra'
 $LOAD_PATH << File.dirname(__FILE__) + '/lib'
-require 'share'
+require 'file_cabinet'
+
+before do
+  @cabinet = FileCabinet.new(File.dirname(__FILE__) + "/public/files")
+end
 
 get '/' do
   # Shows splash screen and upload form
@@ -9,16 +13,32 @@ get '/' do
 end
 
 post '/' do
-  # TODO save file and redirect to show page
+  folder = @cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])
+  redirect "/#{folder.id}/i"
 end
 
 get '/:id/i' do
   # TODO Show file info page
-  erb :fileinfo
+  @file = @cabinet.find(params[:id])
+  raise Sinatra::NotFound if @file.nil?
+  erb :fileinfo  
 end
 
-get '/files/:id' do
-  # TODO send file? - Should not be managed by nginx. Use /public-folder and let the webserver (nginx) send the file!
+helpers do
+  # converts an integer to a readable file size
+  def file_size_string(fs)
+    # n cuts off all decimal places after the second
+    n = lambda{|f| f.to_s[/.*\..{0,2}/] }     
+    if fs < 1024
+      "#{n.call(fs)} Bytes"
+    elsif fs <= 1024**2
+      "#{n.call(fs/1024.0)} KBytes"
+    elsif fs <= 1024**3
+      "#{n.call(fs/1024.0**2)} MBytes"
+    elsif fs <= 1024**4
+      "#{n.call(fs/1024.0**3)} GBytes"
+    end
+  end
 end
 
 use_in_file_templates!
@@ -59,4 +79,5 @@ __END__
 
 
 @@ fileinfo
-"TODO i am the fileinfo view"
+  <%= File.basename(@file.file) %>
+  <%= file_size_string File.size(@file.file) %>  
