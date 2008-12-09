@@ -3,8 +3,8 @@ require 'sinatra'
 $LOAD_PATH << File.dirname(__FILE__) + '/lib'
 require 'file_cabinet'
 
-before do
-  @cabinet = FileCabinet.new(File.dirname(__FILE__) + "/public/files")
+def cabinet
+  @cabinet ||= FileCabinet.new(Sinatra.application.options.public + "/files")
 end
 
 get '/' do
@@ -13,14 +13,14 @@ get '/' do
 end
 
 post '/' do
-  folder = @cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])
+  folder = cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])
   redirect "/#{folder.id}/i"
 end
 
 get '/:id/i' do
   # TODO Show file info page
-  @file = @cabinet.find(params[:id])
-  raise Sinatra::NotFound if @file.nil?
+  @folder = cabinet.find(params[:id])
+  raise Sinatra::NotFound if @folder.nil?
   erb :fileinfo  
 end
 
@@ -38,6 +38,10 @@ helpers do
     elsif fs <= 1024**4
       "#{n.call(fs/1024.0**3)} GBytes"
     end
+  end
+  
+  def file_path(file)
+    file.sub(Sinatra.application.options.public,"")
   end
 end
 
@@ -65,10 +69,10 @@ __END__
 
 @@ index
 <h2>Share a file</h2>
-<form action="/" class="new_share" enctype="multipart/form-data" id="new_share" method="post">    
+<form action="/" enctype="multipart/form-data" id="new_share" method="post">    
   <p>
     <label for="share_file">File</label>
-    <input id="share_file" name="file" size="30" type="file" />
+    <input name="file" size="30" type="file" />
     <br />
     The file will be destroyed after two days!
   </p>
@@ -79,5 +83,24 @@ __END__
 
 
 @@ fileinfo
-  <%= File.basename(@file.file) %>
-  <%= file_size_string File.size(@file.file) %>  
+  <h2>
+    <a href="<%= file_path(@folder.file) %>" title="Download this file now!">Click here to download <%= File.basename(@folder.file) %></a>
+  </h2>
+ 
+  <div>
+    <b>File size:</b>
+    <%= file_size_string File.size(@folder.file) %><br />
+    <b>Created at:</b>
+    <%= File.ctime(@folder.file) %><br />
+    <p> 
+      <b>This file will be destroyed soon.</b>
+    </p>
+    <p>
+      <a href="mailto:?subject=&body=Hi there! I have uploaded a file for you. You can download it here: <%= request.url %>" title="email this page">email this page</a>
+    </p>  
+  </div>  
+
+  <p>
+    <a href="/">Share another file</a>
+  </p> 
+  

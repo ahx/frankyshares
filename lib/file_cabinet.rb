@@ -27,13 +27,13 @@ class FileCabinet
   ORIGINAL_FOLDERNAME = 'original'
   
   # Initialize with path to all folders
-  def initialize(path) 
-    raise InvalidCabinetPath, "Directory does not exist #{path.inspect} " unless File.directory?(path)
+  def initialize(path)     
+    raise(InvalidCabinetPath, "Directory does not exist #{path.inspect}") unless File.directory?(path)
     @files_path = File.expand_path(path)
   end
   
   # Find file folder or return nil
-  def find(id)
+  def find( id )
     folder = "#{@files_path}/#{id}"
     return nil unless File.directory?(folder)
     FileFolder.new(folder)
@@ -41,7 +41,7 @@ class FileCabinet
   
   # Add a file to the cabinet
   def add_file(file, options = {})      
-    raise CannotAddFile unless File.exist?(file)
+    raise(CannotAddFile, "File already exists.") unless File.exist?(file)
     
     new_filename = options[:filename] || File.basename(file)    
     new_id = generate_new_id(new_filename)
@@ -54,6 +54,7 @@ class FileCabinet
     
     FileFolder.new(new_id)
   end
+  
   
   private
   

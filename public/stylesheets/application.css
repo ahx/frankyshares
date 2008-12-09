@@ -15,8 +15,6 @@ a:hover { color: #fff; background-color:#000; }
 
 .field_with_errors { background-color: red; }
 
-form.new_share {}
-
 input[type=submit].upload_file { width: 20em; }
 
 #page {

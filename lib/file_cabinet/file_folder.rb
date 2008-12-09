@@ -8,7 +8,7 @@ class FileCabinet
       raise(FileCabinet::OriginalFileNotFound, "Either there is no '#{ORIGINAL_FOLDERNAME}' folder or it is empty. #{basefolder}") if @filename.nil?
     end
   
-    # returns the path to the (original) file
+    # returns the path to the (original) file
     def file(style = :original)   
       f = "#{@basefolder}/#{style.to_s}/#{@filename}"
       File.file?(f) ? f : nil
@@ -21,6 +21,7 @@ class FileCabinet
     def id
       File.basename(@basefolder)
     end
+    
     
     private
     
