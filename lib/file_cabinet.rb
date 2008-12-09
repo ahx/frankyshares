@@ -14,48 +14,51 @@
 # use folder.destroy to delte a folder/file
 # folder.destroy
 
+# TODO add styles and image processing (see Paperclip)...
+
 require 'fileutils'
 require 'file_cabinet/file_folder'
 
 class FileCabinet  
-  class FilesPathNotValid < ArgumentError; end
-    
+  class InvalidCabinetPath < ArgumentError; end
+  class CannotAddFile < StandardError; end  
+  class OriginalFileNotFound < StandardError; end  
+  
+  ORIGINAL_FOLDERNAME = 'original'
+  
   # Initialize with path to all folders
-  def initialize(path, options = {}) 
-    raise FilesPathNotValid unless File.directory?(path)
-    @original_foldername = options[:orginal_foldername] || 'original'
-    # TODO add styles and image processing (see Paperclip)...
-    # @styles = options[:styles] || {}    
-    @files_path = path
+  def initialize(path) 
+    raise InvalidCabinetPath, "Directory does not exist #{path.inspect} " unless File.directory?(path)
+    @files_path = File.expand_path(path)
   end
   
   # Find file folder or return nil
   def find(id)
-    # Check requirements for a FileFolder...
-    basefolder = "#{@files_path}/#{id}"
-    originalfolder = "#{basefolder}/#{@original_foldername}"
-    return nil unless originalfile = find_first_file_in(originalfolder)
-    FileFolder.new(basefolder, originalfile)
+    folder = "#{@files_path}/#{id}"
+    return nil unless File.directory?(folder)
+    FileFolder.new(folder)
   end
   
   # Add a file to the cabinet
-  def add_file(file)        
-    newid = "#{Time.now.to_i}#{rand(9)}".to_i.to_s(36).sub("-","s") + "-" + File.extname(file).downcase    
+  def add_file(file, options = {})      
+    raise CannotAddFile unless File.exist?(file)
     
-    FileUtils.mkdir_p(orig_folder = (path = "#{@files_path}/#{newid}") + "/#{@original_foldername}")
-    FileUtils.cp(file, orig_folder)
-    FileFolder.new(path, "#{orig_folder}/#{File.basename(file)}")
+    new_filename = options[:filename] || File.basename(file)    
+    new_id = generate_new_id(new_filename)
+    
+    # Make folders and copy file..    
+    orig_folder = "#{new_id}/#{ORIGINAL_FOLDERNAME}"
+    FileUtils.cd(@files_path)
+    FileUtils.mkdir_p(orig_folder)
+    FileUtils.cp(file, orig_folder+"/"+new_filename)
+    
+    FileFolder.new(new_id)
   end
   
   private
   
-  # find first file in path if exists or return nil
-  def find_first_file_in(path)
-    return nil unless File.directory?(path)
-    Dir.entries(path).each do |e| 
-      entry_path = "#{path}/#{e}"
-      return entry_path if File.file?(entry_path); 
-    end
-    nil
+  def generate_new_id(filename)
+    extension = File.basename(filename)[/\w{1,8}$/].downcase    
+    "#{Time.now.to_i}#{rand(9)}".to_i.to_s(36) + "-" + extension
   end
 end
