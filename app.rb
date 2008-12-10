@@ -25,6 +25,9 @@ get '/:id/i' do
 end
 
 helpers do
+  include Rack::Utils
+  alias_method :h, :escape_html
+  
   # converts an integer to a readable file size
   def file_size_string(fs)
     # n cuts off all decimal places after the second
@@ -41,8 +44,8 @@ helpers do
   end
   
   def file_path(file)
-    file.sub(Sinatra.application.options.public,"")
-  end
+    h(file.sub(Sinatra.application.options.public,""))
+  end  
 end
 
 use_in_file_templates!
@@ -83,7 +86,7 @@ __END__
 
 @@ fileinfo
   <h2>
-    <a href="<%= file_path(@folder.file) %>" title="Download this file now!">Click here to download <%= File.basename(@folder.file) %></a>
+    <a href="<%=h file_path(@folder.file) %>" title="Download this file now!">Click here to download <%=h File.basename(@folder.file).inspect %></a>
   </h2>
  
   <div>
