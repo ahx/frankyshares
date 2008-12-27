@@ -50,7 +50,9 @@ class FileCabinet
     # Make folders..    
     FileUtils.mkdir_p(original_folder)
     # and copy file..
-    FileUtils.cp(file, "#{original_folder}/#{new_filename}")
+    FileUtils.cp(file,    "#{original_folder}/#{new_filename}")
+    # TODO chmod is too much responsibility for this thing!
+    FileUtils.chmod(0644, "#{original_folder}/#{new_filename}")
     # return FolderInstance
     FileFolder.new(file_folder)
   end
