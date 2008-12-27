@@ -33,7 +33,7 @@ class FileCabinet
   end
   
   # Find file folder or return nil
-  def find( id )
+  def find(id)
     folder = "#{@files_path}/#{id}"
     return nil unless File.directory?(folder)
     FileFolder.new(folder)
@@ -42,17 +42,17 @@ class FileCabinet
   # Add a file to the cabinet
   def add_file(file, options = {})      
     raise(CannotAddFile, "File already exists.") unless File.exist?(file)
-    
-    new_filename = options[:filename] || File.basename(file)    
+    new_filename = options[:filename] || File.basename(file)
     new_id = generate_new_id(new_filename)
-    
-    # Make folders and copy file..    
-    orig_folder = "#{new_id}/#{ORIGINAL_FOLDERNAME}"
-    FileUtils.cd(@files_path)
-    FileUtils.mkdir_p(orig_folder)
-    FileUtils.cp(file, orig_folder+"/"+new_filename)
-    
-    FileFolder.new(new_id)
+    file_folder = "#{@files_path}/#{new_id}/"
+    original_folder = "#{file_folder}/#{ORIGINAL_FOLDERNAME}"
+      
+    # Make folders..    
+    FileUtils.mkdir_p(original_folder)
+    # and copy file..
+    FileUtils.cp(file, "#{original_folder}/#{new_filename}")
+    # return FolderInstance
+    FileFolder.new(file_folder)
   end
   
   

@@ -5,17 +5,19 @@ $LOAD_PATH << File.dirname(__FILE__) + '../lib'
 require 'file_cabinet'
 
 class TestFileCabinet < Test::Unit::TestCase
+  TEST_DIR = File.expand_path(File.dirname(__FILE__))
+  
   def setup
-    # TODO This is totally unacceptable!
-    FileUtils.mkdir_p(File.expand_path(File.dirname(__FILE__) + '/data/tmp/xyz/original'))
-    FileUtils.mkdir_p(File.expand_path(File.dirname(__FILE__) + '/data/tmp/empty'))
-    @tmp_file = FileUtils.touch(File.expand_path(File.dirname(__FILE__) + '/data/tmp/xyz/original/testfile')).first
-    @cabinet_files_folder = File.expand_path(File.dirname(__FILE__) + '/data/tmp')
+    # TODO This is not nice!
+    FileUtils.mkdir_p(TEST_DIR + '/data/tmp/xyz/original')
+    FileUtils.mkdir_p(TEST_DIR + '/data/tmp/empty')
+    @tmp_file = FileUtils.touch(TEST_DIR + '/data/tmp/xyz/original/testfile').first
+    @cabinet_files_folder = TEST_DIR + '/data/tmp'
     @cabinet = FileCabinet.new(@cabinet_files_folder)
   end
   
   def teardown
-    FileUtils.rm_r Dir.glob(File.expand_path(File.dirname(__FILE__) + '/data/tmp/*'))    
+    FileUtils.rm_r(TEST_DIR + '/data/tmp')
   end
   
   def test_new_should_complain_if_created_without_a_valid_folder
