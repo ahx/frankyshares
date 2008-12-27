@@ -6,19 +6,28 @@ require 'file_cabinet'
 def cabinet
   @cabinet ||= FileCabinet.new(Sinatra.application.options.public + "/files")
 end
-
+  
+# returns the base path of this app. FIXME isn't there a shorter/built in way?
+def app_url
+  # adapted from Rack::Request#url
+  url = request.scheme + "://"
+     url << request.host
+     if request.scheme == "https" && request.port != 443 ||
+         request.scheme == "http" && request.port != 80
+       url << ":#{request.port}"
+     end
+end
+  
 get '/' do
-  # Shows splash screen and upload form
   erb :index
 end
 
 post '/' do
-  folder = cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])
-  redirect "/#{folder.id}/i"
+  @folder = cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])
+  redirect folder_path(@folder)
 end
 
 get '/:id/i' do
-  # TODO Show file info page
   @folder = cabinet.find(params[:id])
   raise Sinatra::NotFound if @folder.nil?
   erb :fileinfo  
@@ -44,8 +53,16 @@ helpers do
   end
   
   def file_path(file)
-    h(file.sub(Sinatra.application.options.public,""))
-  end  
+    file.sub(Sinatra.application.options.public,"")
+  end
+  
+  def folder_path(folder)
+    "/#{folder.id}/i"
+  end
+  
+  def folder_url(folder)
+    app_url + folder_path(folder)
+  end
 end
 
 use_in_file_templates!
@@ -86,19 +103,19 @@ __END__
 
 @@ fileinfo
   <h2>
-    <a href="<%=h file_path(@folder.file) %>" title="Download this file now!">Click here to download <%=h File.basename(@folder.file).inspect %></a>
+    <a href="<%=h file_path(@folder.file) %>" title="Download this file now!">Download "<%=h File.basename(@folder.file) %>"</a>
   </h2>
  
   <div>
     <b>File size:</b>
-    <%= file_size_string File.size(@folder.file) %><br />
+    <%=h file_size_string File.size(@folder.file) %><br />
     <b>Created at:</b>
     <%= File.ctime(@folder.file) %><br />
     <p> 
       <b>This file will be destroyed soon.</b>
     </p>
     <p>
-      <a href="mailto:?subject=&body=Hi there! I have uploaded a file for you. You can download it here: <%= request.url %>" title="email this page">email this page</a>
+      <a href="mailto:?subject=&body=Hi there! I have uploaded a file for you. You can download it here: <%=h folder_url(@folder) %>" title="email this page">email this page</a>
     </p>  
   </div>  
 
