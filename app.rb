@@ -17,6 +17,10 @@ def app_url
        url << ":#{request.port}"
      end
 end
+ 
+not_found do
+  erb :not_found
+end 
   
 get '/' do
   erb :index
@@ -122,4 +126,8 @@ __END__
   <p>
     <a href="/">Share another file</a>
   </p> 
+  
+@@ not_found
+  <h2>File not found</h2>
+  <p>Either you got the wrong adress or this file has expired.</p>
   
