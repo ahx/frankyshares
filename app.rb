@@ -59,13 +59,10 @@ helpers do
   
   # returns the base path of this app. FIXME isn't there a shorter/built in way?
   def root_url
-    # adapted from Rack::Request#url
-    url = request.scheme + "://"
-       url << request.host
-       if request.scheme == "https" && request.port != 443 ||
-           request.scheme == "http" && request.port != 80
-         url << ":#{request.port}"
-       end
+    # NOTE there was a problem with request.port, when using sockets (Thin), 
+    # so here we are not assembling the url (request.schema + ... + 
+    # request.port), but just using a (dirty?) regexp..
+    request.url.match(/(^.*\/{2}[^\/]*)/)[1]
   end
 end
 
