@@ -3,21 +3,10 @@ require 'sinatra'
 $LOAD_PATH << File.dirname(__FILE__) + '/lib'
 require 'file_cabinet'
 
-def cabinet
-  @cabinet ||= FileCabinet.new(Sinatra.application.options.public + "/files")
+before do
+  @cabinet = FileCabinet.new(Sinatra.application.options.public + "/files")
 end
-  
-# returns the base path of this app. FIXME isn't there a shorter/built in way?
-def app_url
-  # adapted from Rack::Request#url
-  url = request.scheme + "://"
-     url << request.host
-     if request.scheme == "https" && request.port != 443 ||
-         request.scheme == "http" && request.port != 80
-       url << ":#{request.port}"
-     end
-end
- 
+   
 not_found do
   erb :not_found
 end 
@@ -27,12 +16,12 @@ get '/' do
 end
 
 post '/' do
-  @folder = cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])
+  @folder = @cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])
   redirect folder_path(@folder)
 end
 
 get '/:id/i' do
-  @folder = cabinet.find(params[:id])
+  @folder = @cabinet.find(params[:id])
   raise Sinatra::NotFound if @folder.nil?
   erb :fileinfo  
 end
@@ -65,7 +54,18 @@ helpers do
   end
   
   def folder_url(folder)
-    app_url + folder_path(folder)
+    root_url + folder_path(folder)
+  end
+  
+  # returns the base path of this app. FIXME isn't there a shorter/built in way?
+  def root_url
+    # adapted from Rack::Request#url
+    url = request.scheme + "://"
+       url << request.host
+       if request.scheme == "https" && request.port != 443 ||
+           request.scheme == "http" && request.port != 80
+         url << ":#{request.port}"
+       end
   end
 end
 
