@@ -103,16 +103,16 @@ __END__
 
 @@ fileinfo
   <h2>
-    <a href="<%=h file_path(@folder.file) %>" title="Download this file now!">Download "<%=h File.basename(@folder.file) %>"</a>
+    <a href="<%=h file_path(@folder.file) %>" title="Download this file now!">Download <i><%=h File.basename(@folder.file) %></i> now</a>
   </h2>
  
   <div>
     <b>File size:</b>
     <%=h file_size_string File.size(@folder.file) %><br />
-    <b>Created at:</b>
+    <b>Uploaded at:</b>
     <%= File.ctime(@folder.file) %><br />
     <p> 
-      <b>This file will be destroyed soon.</b>
+      This file will be destroyed soon
     </p>
     <p>
       <a href="mailto:?subject=&body=Hi there! I have uploaded a file for you. You can download it here: <%=h folder_url(@folder) %>" title="email this page">email this page</a>
