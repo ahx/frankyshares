@@ -4,14 +4,14 @@
 # Usage
 # To create a new FileCabinet point it to an EXISTING Folder
 # cabinet = FileCabinet.new("~/app/data/files")
-# Use .add_file To save a file in the FileCabinet
+# Use FileCabinet#add_file To save a file in the FileCabinet
 # cabinet.add_file("/tmp/yxz/test.jpg")
 # The file gets saved into a randomly named folder
-# Use .find to find a folder 
+# Use FileCabinet#find to find a folder (returns FileFolder, but that might change)
 # folder = cabinet.find("xyz")
-# use .file to get the actual file, saved in the folder
+# use FileFolder#file to get the actual file, saved in the folder
 # File.file?(folder.file) # should return true
-# use folder.destroy to delte a folder/file
+# use folder.destroy to delete a folder/file
 # folder.destroy
 
 # TODO add styles and image processing (see Paperclip)...
