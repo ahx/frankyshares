@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'sinatra'
-$LOAD_PATH << File.dirname(__FILE__) + '/lib'
+require 'action_view'
+$:.unshift(File.dirname(__FILE__) + '/lib')
 require 'file_cabinet'
 
 before do
@@ -27,8 +28,9 @@ get '/:id/i' do
 end
 
 helpers do
-  include Rack::Utils
-  alias_method :h, :escape_html
+  include Rack::Utils  
+  alias_method :h, :escape_html  
+  include ActionView::Helpers::DateHelper
   
   # converts an integer to a readable file size
   def file_size_string(fs)
@@ -89,37 +91,34 @@ __END__
 
 
 @@ index
-<h2>Share a file</h2>
-<form action="/" enctype="multipart/form-data" method="post">    
-  <p>
-    <label for="share_file">File</label>
-    <input name="file" size="30" type="file" />        
-    <p>The file will be destroyed after two days!</p>
-  </p>
-  <p>
-    <input class="upload_file" name="commit" type="submit" value="Upload the file" />
-  </p>  
-</form>
+  <h2>Share a file</h2>
+  <form action="/" enctype="multipart/form-data" method="post">    
+    <p>
+      <label for="share_file">File</label>
+      <input name="file" size="30" type="file" />        
+      <p>The file will be destroyed after two days!</p>
+    </p>
+    <p>
+      <input class="upload_file" name="commit" type="submit" value="Upload the file" />
+    </p>  
+  </form>
 
 
 @@ fileinfo
   <h2>
     <a href="<%=h file_path(@folder.file) %>" title="Download this file now!">Download <i><%=h File.basename(@folder.file) %></i> now</a>
-  </h2>
- 
+  </h2> 
   <div>
     <b>File size:</b>
     <%=h file_size_string File.size(@folder.file) %><br />
-    <b>Uploaded at:</b>
-    <%= File.ctime(@folder.file) %><br />
+    <b>Uploaded at:</b> <%= File.ctime(@folder.file).to_s(:long) %><br />
     <p> 
-      This file will be destroyed soon
+      This file will be destroyed in <%= time_ago_in_words(File.ctime(@folder.file) + 172800) %> <%# 2 days  %>
     </p>
     <p>
       <a href="mailto:?subject=&body=Hi there! I have uploaded a file for you. You can download it here: <%=h folder_url(@folder) %>" title="email this page">email this page</a>
     </p>  
   </div>  
-
   <p>
     <a href="/">Share another file</a>
   </p> 
