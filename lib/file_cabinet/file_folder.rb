@@ -1,11 +1,12 @@
 require 'fileutils'
 
 class FileCabinet  
-  class FileFolder    
+  class FileFolder      
+    
     def initialize(basefolder)
       @basefolder = basefolder
       @filename = find_first_file_in("#{@basefolder}/#{ORIGINAL_FOLDERNAME}")
-      raise(FileCabinet::OriginalFileNotFound, "Either there is no '#{ORIGINAL_FOLDERNAME}' folder or it is empty. #{basefolder}") if @filename.nil?
+      raise(FileCabinet::OriginalFileNotFound, "Cannot find original file in #{basefolder}!") if @filename.nil?
     end
   
     # returns the path to the (original) file

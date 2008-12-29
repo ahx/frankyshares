@@ -20,15 +20,16 @@ require 'fileutils'
 require 'file_cabinet/file_folder'
 
 class FileCabinet  
-  class InvalidCabinetPath < ArgumentError; end
-  class CannotAddFile < StandardError; end  
+  
+  class CabinetPathNotFound < ArgumentError; end
+  class FileExists < StandardError; end 
   class OriginalFileNotFound < StandardError; end  
   
   ORIGINAL_FOLDERNAME = 'original'
   
   # Initialize with path to all folders
   def initialize(path)
-    raise(InvalidCabinetPath, "Directory does not exist #{path.inspect}") unless File.directory?(path)
+    raise(CabinetPathNotFound, "Directory does not exist #{path.inspect}!") unless File.directory?(path)
     @files_path = File.expand_path(path)
   end
   
@@ -40,7 +41,7 @@ class FileCabinet
   
   # Add a file to the cabinet
   def add_file(file, options = {})      
-    raise(CannotAddFile, "File already exists.") unless File.exist?(file)
+    raise(FileExists, "Cannot add file, because it already exists!") unless File.exist?(file)
     new_filename = options[:filename] || File.basename(file)
     new_id = generate_new_id(new_filename)
     file_folder = "#{@files_path}/#{new_id}/"

@@ -5,10 +5,11 @@ $LOAD_PATH << File.dirname(__FILE__) + '../lib'
 require 'file_cabinet'
 
 class TestFileCabinet < Test::Unit::TestCase
+  # Where to save test-files
   TEST_DIR = File.expand_path(File.dirname(__FILE__))
   
   def setup
-    # TODO This is not nice!
+    # Creating test-files. TODO All this feels wrong!
     FileUtils.mkdir_p(TEST_DIR + '/data/tmp/xyz/original')
     FileUtils.mkdir_p(TEST_DIR + '/data/tmp/empty')
     @tmp_file = FileUtils.touch(TEST_DIR + '/data/tmp/xyz/original/testfile').first
@@ -17,11 +18,12 @@ class TestFileCabinet < Test::Unit::TestCase
   end
   
   def teardown
+    # Deleting test-files
     FileUtils.rm_r(TEST_DIR + '/data/tmp')
   end
   
-  def test_new_should_complain_if_created_without_a_valid_folder
-    assert_raise(FileCabinet::InvalidCabinetPath) do
+  def test_should_complain_if_created_without_folder
+    assert_raise(FileCabinet::CabinetPathNotFound) do
       FileCabinet.new(File.expand_path(File.dirname(__FILE__) + '/wrongfolder'))
     end
   end
@@ -33,7 +35,7 @@ class TestFileCabinet < Test::Unit::TestCase
   end
   
   def test_should_not_find_file
-    assert @cabinet.find("filenotfound").nil?
+    assert @cabinet.find("nonexistend").nil?
   end
   
   def test_what_to_do_when_dir_is_empty?
@@ -62,16 +64,13 @@ class TestFileCabinet < Test::Unit::TestCase
   def test_should_add_file_with_special_filename
     assert File.exist?(@tmp_file)
     myname = "custom filename"
-    assert folder = @cabinet.add_file(@tmp_file, :filename => myname)    
-    assert_equal(myname, File.basename(folder.file))
-    # assert_equal(myname, File.basename(@cabinet.find(folder.id).file))
+    assert folder = @cabinet.add_file(@tmp_file, :filename => myname)
+    assert_equal(myname, File.basename(@cabinet.find(folder.id).file))
   end
   
   def test_should_not_add_file_to_cabinet
     @tmp_file = File.dirname(__FILE__) + '/doesnotexist'    
-    assert(!File.exist?(@tmp_file), "File should not exist")
-    
-    assert_raise(FileCabinet::CannotAddFile) { @cabinet.add_file(File.expand_path(@tmp_file)) }
+    assert_raise(FileCabinet::FileExists) { @cabinet.add_file(File.expand_path(@tmp_file)) }
   end
   
   def test_should_destroy_a_file    
