@@ -1,7 +1,5 @@
-require "test/unit"
+require 'test_helper'
 require 'fileutils'
-
-$LOAD_PATH << File.dirname(__FILE__) + '../lib'
 require 'file_cabinet'
 
 class TestFileCabinet < Test::Unit::TestCase
@@ -9,6 +7,7 @@ class TestFileCabinet < Test::Unit::TestCase
   TEST_DIR = File.expand_path(File.dirname(__FILE__))
   
   def setup
+    puts "setup"
     # Creating test-files. TODO All this feels wrong!
     FileUtils.mkdir_p(TEST_DIR + '/data/tmp/xyz/original')
     FileUtils.mkdir_p(TEST_DIR + '/data/tmp/empty')
@@ -18,6 +17,7 @@ class TestFileCabinet < Test::Unit::TestCase
   end
   
   def teardown
+    puts "teardown"
     # Deleting test-files
     FileUtils.rm_r(TEST_DIR + '/data/tmp')
   end
