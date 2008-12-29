@@ -22,7 +22,7 @@ require 'file_cabinet/file_folder'
 class FileCabinet  
   
   class CabinetPathNotFound < ArgumentError; end
-  class FileExists < StandardError; end 
+  class FileDoesNotExist < StandardError; end 
   class OriginalFileNotFound < StandardError; end  
   
   ORIGINAL_FOLDERNAME = 'original'
@@ -35,17 +35,17 @@ class FileCabinet
   
   # Find file folder or return nil
   def find(id)
-    folder = "#{@files_path}/#{id}"
-    File.directory?(folder) ? FileFolder.new(folder) : nil    
+    path = folder_path(id)
+    File.directory?(path) ? FileFolder.new(path) : nil    
   end
   
   # Add a file to the cabinet
   def add_file(file, options = {})      
-    raise(FileExists, "Cannot add file, because it already exists!") unless File.exist?(file)
+    raise(FileDoesNotExist, "Cannot add file, because it already exists!") unless File.exist?(file)
     new_filename = options[:filename] || File.basename(file)
-    new_id = generate_new_id(new_filename)
-    file_folder = "#{@files_path}/#{new_id}/"
-    original_folder = "#{file_folder}/#{ORIGINAL_FOLDERNAME}"
+    new_id = generate_new_id(new_filename) 
+    path = folder_path(new_id)
+    original_folder = "#{path}/#{ORIGINAL_FOLDERNAME}"
       
     # Make folders..    
     FileUtils.mkdir_p(original_folder)
@@ -53,12 +53,17 @@ class FileCabinet
     FileUtils.cp(file,    "#{original_folder}/#{new_filename}")
     # TODO chmod is too much responsibility for this thing!
     FileUtils.chmod(0644, "#{original_folder}/#{new_filename}")
+    
     # return FolderInstance
-    FileFolder.new(file_folder)
+    FileFolder.new(path)
   end
   
   
   private
+  
+  def folder_path(id)
+    "#{@files_path}/#{id}"
+  end
   
   def generate_new_id(filename)
     extension = File.basename(filename)[/\w{1,8}$/].downcase    

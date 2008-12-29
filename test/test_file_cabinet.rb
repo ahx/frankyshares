@@ -1,80 +1,128 @@
 require 'test_helper'
-require 'fileutils'
+
 require 'file_cabinet'
+require 'fileutils'
+require 'tmpdir'
 
 class TestFileCabinet < Test::Unit::TestCase
-  # Where to save test-files
-  TEST_DIR = File.expand_path(File.dirname(__FILE__))
-  
-  def setup
-    puts "setup"
-    # Creating test-files. TODO All this feels wrong!
-    FileUtils.mkdir_p(TEST_DIR + '/data/tmp/xyz/original')
-    FileUtils.mkdir_p(TEST_DIR + '/data/tmp/empty')
-    @tmp_file = FileUtils.touch(TEST_DIR + '/data/tmp/xyz/original/testfile').first
-    @cabinet_files_folder = TEST_DIR + '/data/tmp'
-    @cabinet = FileCabinet.new(@cabinet_files_folder)
-  end
-  
-  def teardown
-    puts "teardown"
-    # Deleting test-files
-    FileUtils.rm_r(TEST_DIR + '/data/tmp')
-  end
-  
-  def test_should_complain_if_created_without_folder
-    assert_raise(FileCabinet::CabinetPathNotFound) do
-      FileCabinet.new(File.expand_path(File.dirname(__FILE__) + '/wrongfolder'))
-    end
-  end
-  
-  def test_should_find_file
-    assert f = @cabinet.find("xyz"), "File not found!"
-    assert File.file?(f.file), "File #{f.file.inspect} is not a file!"
-    assert_equal(File.basename(f.file), "testfile")
-  end
-  
-  def test_should_add_file_to_cabinet    
-    assert folder = @cabinet.add_file(@tmp_file)        
-        
-    # The new folder should be found with Cabinet#find
-    assert folder = @cabinet.find(folder.id)
-    
-    # the file should be found inside the folder
-    assert File.file?(folder.file)
-        
-    # file should be identical with original file
-    assert FileUtils.identical?(@tmp_file, folder.file)
-    
-    # file should be a COPY, but NOT the same file
-    assert_not_equal(@tmp_file, folder.file)  
+  # Directory for generated test-files. This directory will be destroyed afterwards.
+  TEST_DIR = Dir.tmpdir + "/#{self.name}-test-files"
+
+  def delete_test_dir
+    FileUtils.rm_r(TEST_DIR)
   end
 
-  def test_should_add_file_with_special_filename
-    assert File.exist?(@tmp_file)
-    myname = "custom filename"
-    assert folder = @cabinet.add_file(@tmp_file, :filename => myname)
-    assert_equal(myname, File.basename(@cabinet.find(folder.id).file))
+context "An existing file" do
+  before do  
+    FileUtils.mkdir_p(TEST_DIR + '/xyz/original')
+    FileUtils.touch(TEST_DIR + '/xyz/original/testfile')  
+    @cabinet = FileCabinet.new(TEST_DIR)    
+    @folder = @cabinet.find("xyz")
   end
+
+  should "be findable" do
+    assert_not_nil folder = @cabinet.find(@folder.id)
+    assert File.file?(folder.file)
+  end
+
+
+  context "that has been destroyed" do
+    before do
+      @filepath = @folder.file  # saving file path
+      @folder.destroy
+    end
+
+    should "not be findable" do
+      assert_nil @cabinet.find(@folder.id)
+    end
   
-  def test_what_to_do_when_dir_is_empty?
-    assert_raise(FileCabinet::OriginalFileNotFound) do
-      assert @cabinet.find("empty")
+    should "be removed from the filesystem" do        
+      assert !File.exist?(@filepath)
     end
   end
   
-  def test_should_not_add_file_to_cabinet
-    @tmp_file = File.dirname(__FILE__) + '/doesnotexist'    
-    assert_raise(FileCabinet::FileExists) { @cabinet.add_file(File.expand_path(@tmp_file)) }
+  after do
+    delete_test_dir
+  end
+end
+
+
+context "When a new file is added" do
+  before do
+    FileUtils.mkdir(TEST_DIR)  
+    @cabinet = FileCabinet.new(TEST_DIR)
+    @file_to_be_added = FileUtils.touch(TEST_DIR + '/my_uploaded_file').first      
+    # adding the file!
+    @folder = @cabinet.add_file(@file_to_be_added)
   end
   
-  def test_should_destroy_a_file    
-    assert f = @cabinet.find("xyz")
-    file = f.file
-    assert File.exist?(file)
-    
-    f.destroy
-    assert !File.exist?(file), "File #{file} should be deleted!"
-    assert @cabinet.find("xyz").nil?
+  test "the add method return the same as finding the file with find" do
+      assert_equal(@folder.file, @cabinet.find(@folder.id).file)
   end
+  
+  it "should be findable" do
+    assert_not_nil folder = @cabinet.find(@folder.id)
+    assert File.file?(folder.file)
+  end
+      
+  it "should be a copy of the original file but not the same file" do
+    assert FileUtils.identical?(@file_to_be_added, @folder.file)
+    assert_not_equal(@tmp_file, @folder.file)
+  end
+  
+  it "should have retained its original filename" do
+    assert_equal("my_uploaded_file", File.basename(@folder.file))
+  end
+      
+    
+  context "with a specific filename" do
+    before do
+      # adding the file
+      @folder = @cabinet.add_file(@file_to_be_added, :filename => "special")
+    end
+    
+    it "should have that specific filename" do
+      assert_equal("special", File.basename(@folder.file))
+    end
+  end  
+  
+  after do
+    delete_test_dir
+  end        
+end
+
+
+context "It should throw exceptions" do
+  
+  test "when a file cabinet is initialized without an existing folder" do
+    assert_raise(FileCabinet::CabinetPathNotFound) do
+      FileCabinet.new("nonexistent folder")
+    end
+  end  
+  
+  
+  context "with an existing file cabinet" do
+    before do
+      FileUtils.mkdir_p(TEST_DIR + "/empty")  
+      @cabinet = FileCabinet.new(TEST_DIR)
+    end
+    
+    test "when trying to add a non existing file" do
+      assert_raise(FileCabinet::FileDoesNotExist) do
+         @cabinet.add_file("nonexistent") 
+       end
+    end
+    
+    test "when the original file cannot be found inside a folder" do
+      assert_raise(FileCabinet::OriginalFileNotFound) do
+        assert @cabinet.find("empty")
+      end
+    end    
+    
+    after do
+      delete_test_dir
+    end      
+  end
+end
+
 end
