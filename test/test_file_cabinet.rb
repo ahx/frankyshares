@@ -34,38 +34,33 @@ class TestFileCabinet < Test::Unit::TestCase
     assert_equal(File.basename(f.file), "testfile")
   end
   
-  def test_should_not_find_file
-    assert @cabinet.find("nonexistend").nil?
+  def test_should_add_file_to_cabinet    
+    assert folder = @cabinet.add_file(@tmp_file)        
+        
+    # The new folder should be found with Cabinet#find
+    assert folder = @cabinet.find(folder.id)
+    
+    # the file should be found inside the folder
+    assert File.file?(folder.file)
+        
+    # file should be identical with original file
+    assert FileUtils.identical?(@tmp_file, folder.file)
+    
+    # file should be a COPY, but NOT the same file
+    assert_not_equal(@tmp_file, folder.file)  
+  end
+
+  def test_should_add_file_with_special_filename
+    assert File.exist?(@tmp_file)
+    myname = "custom filename"
+    assert folder = @cabinet.add_file(@tmp_file, :filename => myname)
+    assert_equal(myname, File.basename(@cabinet.find(folder.id).file))
   end
   
   def test_what_to_do_when_dir_is_empty?
     assert_raise(FileCabinet::OriginalFileNotFound) do
       assert @cabinet.find("empty")
     end
-  end
-  
-  def test_should_add_file_to_cabinet    
-    assert folder = @cabinet.add_file(@tmp_file)
-    
-    # There should be a folder :cabinet/:id
-    assert_not_nil(folder.id)
-    assert File.directory?(@cabinet_files_folder + "/#{folder.id}"), "Folder not in place"
-    
-    # There should be a folder :cabinet/:id/original
-    orig = @cabinet_files_folder + "/#{folder.id}/original"
-    assert File.directory?(orig), "Original folder not in place"
-    # ... with the file in it, copied from the @tmp_file
-    assert FileUtils.identical?(File.expand_path(@tmp_file), orig + "/" + File.basename(folder.file))
-    
-    # file should be a COPY, but NOT the same file
-    assert_not_equal(@tmp_file, folder.file)  
-  end
-  
-  def test_should_add_file_with_special_filename
-    assert File.exist?(@tmp_file)
-    myname = "custom filename"
-    assert folder = @cabinet.add_file(@tmp_file, :filename => myname)
-    assert_equal(myname, File.basename(@cabinet.find(folder.id).file))
   end
   
   def test_should_not_add_file_to_cabinet
@@ -79,7 +74,7 @@ class TestFileCabinet < Test::Unit::TestCase
     assert File.exist?(file)
     
     f.destroy
-    assert !File.exist?(file), "File #{file} should not be a file!"
+    assert !File.exist?(file), "File #{file} should be deleted!"
     assert @cabinet.find("xyz").nil?
   end
 end
