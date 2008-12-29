@@ -125,5 +125,6 @@ __END__
   
 @@ not_found
   <h2>File not found</h2>
-  <p>Either you got the wrong adress or this file has expired.</p>
+  <p>Either you got the wrong adress or this file has expired. <br />
+    <span class="light-description">(Uploaded files get deleted after two days.)</span></p>
   
