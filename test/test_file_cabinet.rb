@@ -14,8 +14,8 @@ class TestFileCabinet < Test::Unit::TestCase
 
 context "An existing file" do
   before do  
-    FileUtils.mkdir_p(TEST_DIR + '/xyz/original')
-    FileUtils.touch(TEST_DIR + '/xyz/original/testfile')  
+    FileUtils.mkdir_p(TEST_DIR + '/xyz')
+    FileUtils.touch(TEST_DIR + '/xyz/testfile')  
     @cabinet = FileCabinet.new(TEST_DIR)    
     @folder = @cabinet.find("xyz")
   end

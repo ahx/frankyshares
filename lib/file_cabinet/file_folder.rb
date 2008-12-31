@@ -5,13 +5,13 @@ class FileCabinet
     
     def initialize(basefolder)
       @basefolder = basefolder
-      @filename = find_first_file_in("#{@basefolder}/#{ORIGINAL_FOLDERNAME}")
+      @filename = find_first_file_in("#{@basefolder}")
       raise(FileCabinet::OriginalFileNotFound, "Cannot find original file in #{basefolder}!") if @filename.nil?
     end
   
-    # returns the path to the (original) file
-    def file(style = :original)   
-      f = "#{@basefolder}/#{style.to_s}/#{@filename}"
+    # returns the path to the file
+    def file()   
+      f = "#{@basefolder}/#{@filename}"
       File.file?(f) ? f : nil
     end
     

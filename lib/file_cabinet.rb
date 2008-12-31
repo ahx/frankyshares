@@ -1,5 +1,4 @@
-# Provides an interface to manage Files in a folder
-# TODO save different styles of a file (compare with Paperclip)
+# Provides an interface to save and find Files in a folder
 # 
 # Usage
 # To create a new FileCabinet point it to an EXISTING Folder
@@ -14,7 +13,6 @@
 # use folder.destroy to delete a folder/file
 # folder.destroy
 
-# TODO add styles and image processing (see Paperclip)...
 
 require 'fileutils'
 require 'file_cabinet/file_folder'
@@ -23,9 +21,7 @@ class FileCabinet
   
   class CabinetPathNotFound < ArgumentError; end
   class FileDoesNotExist < StandardError; end 
-  class OriginalFileNotFound < StandardError; end  
-  
-  ORIGINAL_FOLDERNAME = 'original'
+  class OriginalFileNotFound < StandardError; end
   
   # Initialize with path to all folders
   def initialize(path)
@@ -45,14 +41,13 @@ class FileCabinet
     new_filename = options[:filename] || File.basename(file)
     new_id = generate_new_id(new_filename) 
     path = folder_path(new_id)
-    original_folder = "#{path}/#{ORIGINAL_FOLDERNAME}"
       
     # Make folders..    
-    FileUtils.mkdir_p(original_folder)
+    FileUtils.mkdir_p(path)
     # and copy file..
-    FileUtils.cp(file,    "#{original_folder}/#{new_filename}")
+    FileUtils.cp(file,    "#{path}/#{new_filename}")
     # TODO chmod is too much responsibility for this thing!
-    FileUtils.chmod(0644, "#{original_folder}/#{new_filename}")
+    FileUtils.chmod(0644, "#{path}/#{new_filename}")
     
     # return FolderInstance
     FileFolder.new(path)
