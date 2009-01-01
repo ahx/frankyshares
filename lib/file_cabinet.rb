@@ -53,8 +53,7 @@ class FileCabinet
   end
   
   def generate_new_id(filename)
-    extension = File.basename(filename)[/\w{1,8}$/].downcase    
-    "#{Time.now.to_i}#{rand(9)}".to_i.to_s(36) + "-" + extension
+    "#{Time.now.to_i}#{rand(9)}".to_i.to_s(36)
   end
   
   class FileFolder

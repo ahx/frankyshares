@@ -21,7 +21,7 @@ post '/' do
   redirect folder_path(@folder)
 end
 
-get '/:id/i' do
+get '/:id' do
   @folder = @cabinet.find(params[:id])
   raise Sinatra::NotFound if @folder.nil?
   erb :fileinfo  
@@ -52,7 +52,7 @@ helpers do
   end
   
   def folder_path(folder)
-    "/#{folder.id}/i"
+    "/#{folder.id}"
   end
   
   def folder_url(folder)
