@@ -76,14 +76,14 @@ __END__
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<link rel="stylesheet" href="/stylesheets/application.css" type="text/css" media="screen" title="colorfull disk" charset="utf-8">
+<link rel="stylesheet" href="/application.css" type="text/css" media="screen" title="colorfull disk" charset="utf-8">
 <head>
   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
   <title>I Haz Filesharez!</title>
 </head>
 <body>
 <div id="page">
-  <div id="site-title"><a href="/" title="Startpage"><img src="/images/disk.png" width="383" height="105" alt="Exploding disk" /></a></div>  
+  <div id="site-title"><a href="/" title="Startpage"><img src="/disk.png" width="383" height="105" alt="Exploding disk" /></a></div>  
   <%= yield  %>
 </div>
 </body>
