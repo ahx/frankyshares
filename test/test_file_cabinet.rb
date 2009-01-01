@@ -5,7 +5,6 @@ require 'fileutils'
 require 'tmpdir'
 
 class TestFileCabinet < Test::Unit::TestCase
-  # Directory for generated test-files. This directory will be destroyed afterwards.
   TEST_DIR = Dir.tmpdir + "/#{self.name}-test-files"
 
   def delete_test_dir

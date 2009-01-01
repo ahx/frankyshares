@@ -3,16 +3,11 @@
 # Usage
 # To create a new FileCabinet point it to an EXISTING Folder
 # cabinet = FileCabinet.new("~/app/data/files")
-# Use FileCabinet#add_file To save a file in the FileCabinet
-# cabinet.add_file("/tmp/yxz/test.jpg")
-# The file gets saved into a randomly named folder
-# Use FileCabinet#find to find a folder (returns FileFolder, but that might change)
-# folder = cabinet.find("xyz")
-# use FileFolder#file to get the actual file, saved in the folder
-# File.file?(folder.file) # should return true
-# use folder.destroy to delete a folder/file
-# folder.destroy
-
+# Add/Move a file to the FileCabinet
+# folder = cabinet.add_file("/tmp/uploaded/test.jpg") # Gets saved in a random named folder
+# folder = cabinet.find(folder.id)  # Finds a folder
+# File.file?(folder.file)       # Gets the file
+# folder.destroy                # Delete the folder and the file included
 
 require 'fileutils'
 
