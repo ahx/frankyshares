@@ -23,14 +23,14 @@ class FileCabinet
   end
   
   # Find file folder or return nil
-  def find(id)
-    path = folder_path(id)
-    File.directory?(path) ? FileFolder.new(path) : nil    
+  def find(id)    
+    f = folder_path(id)    
+    FileFolder.new(f) if File.directory?(f) 
   end
   
   # Add a file to the cabinet
   def add_file(file, options = {})      
-    raise(FileDoesNotExist, "Cannot add file, because it already exists!") unless File.exist?(file)
+    raise(FileDoesNotExist, "Cannot add file, because it already exists!") if !File.exist?(file)
     new_filename = options[:filename] || File.basename(file)
     new_id = generate_new_id(new_filename) 
     path = folder_path(new_id)
@@ -66,7 +66,7 @@ class FileCabinet
     # returns the path to the file
     def file()
       f = "#{@basefolder}/#{@filename}"
-      File.file?(f) ? f : nil
+      f if File.file?(f)
     end
 
     def destroy
@@ -82,9 +82,12 @@ class FileCabinet
 
     # find first file in path if exists or return nil
     def find_first_file_in(path)
-      return nil unless File.directory?(path)
-      Dir.entries(path).each { |e| return e if File.file?("#{path}/#{e}") }
-      nil
+      if File.directory?(path)
+        Dir.entries(path).each { |f| 
+          return f if File.file?("#{path}/#{f}") 
+        }
+        nil
+      end
     end    
   end  
 end
