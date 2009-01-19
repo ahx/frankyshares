@@ -2,7 +2,7 @@ Frankyshares
 ===============================================
 
 This is a simple rapidshare-like sinatra app, which does not use a database. 
-This is mostly written for educating purpose. The Tests are a bit ugly.
+This is mostly written for educating purpose.
 
 == You can
 * upload a file
