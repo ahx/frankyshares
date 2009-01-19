@@ -5,7 +5,7 @@ $:.unshift(File.dirname(__FILE__) + '/lib')
 require 'file_cabinet'
 
 before do
-  @cabinet = FileCabinet.new(Sinatra.application.options.public + "/files")
+  @cabinet = FileCabinet.new(Sinatra::Application.public + "/files")
 end
    
 not_found do
