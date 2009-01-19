@@ -38,9 +38,9 @@ class FileCabinet
     # Make folders..    
     FileUtils.mkdir_p(path)
     # and copy file..
-    FileUtils.cp(file,    "#{path}/#{new_filename}")
+    FileUtils.cp(file,    File.join(path, new_filename))
     # TODO chmod is too much responsibility for this thing!
-    FileUtils.chmod(0644, "#{path}/#{new_filename}")
+    FileUtils.chmod(0644, File.join(path, new_filename))
     
     # return FolderInstance
     FileFolder.new(path)
@@ -65,7 +65,7 @@ class FileCabinet
 
     # returns the path to the file
     def file()
-      f = "#{@basefolder}/#{@filename}"
+      f = File.join(@basefolder, @filename)
       f if File.file?(f)
     end
 
@@ -84,7 +84,7 @@ class FileCabinet
     def find_first_file_in(path)
       if File.directory?(path)
         Dir.entries(path).each { |f| 
-          return f if File.file?("#{path}/#{f}") 
+          return f if File.file?(File.join(path, f)) 
         }
         nil
       end
