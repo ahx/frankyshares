@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'sinatra'
 require 'action_view'
-$:.unshift(File.dirname(__FILE__) + '/lib')
+$: << File.dirname(__FILE__) + '/lib'
 require 'file_cabinet'
 
 before do
@@ -48,7 +48,7 @@ helpers do
   end
   
   def file_path(file)
-    file.sub(Sinatra.application.options.public,"")
+    file.sub(Sinatra::Application.public,"")
   end
   
   def folder_path(folder)
@@ -110,7 +110,7 @@ __END__
   </h2> 
   <div>
     <b>File size:</b>
-    <%=h file_size_string File.size(@folder.file) %><br />
+    <%=h file_size_string(File.size(@folder.file)) %><br />
     <b>Uploaded at:</b> <%= File.ctime(@folder.file).to_s(:long) %><br />
     <p> 
       This file will be destroyed in <%= time_ago_in_words(File.ctime(@folder.file) + 172800) %> <%# 2 days  %>
