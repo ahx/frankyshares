@@ -1,8 +1,6 @@
 require 'test_helper'
 
 require 'file_cabinet'
-require 'fileutils'
-require 'tmpdir'
 
 class TestFileCabinet < Test::Unit::TestCase
   TEST_DIR = Dir.tmpdir + "/#{self.name}-test-files"
