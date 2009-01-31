@@ -1,9 +1,9 @@
-require 'sinatra'
+require 'app'
 
 {
+    # FIXME I don't know, what this run option means
     :run => false,
     :environment => :production
-}.each { |k, v| Sinatra::Default.set(k, v) }
+}.each { |k, v| Frankyshares.set(k, v) }
 
-require 'app'
-run Sinatra::Application
+run Frankyshares

@@ -1,38 +1,46 @@
 require 'rubygems'
-require 'sinatra'
+require 'sinatra/base'
 require 'action_view'
 $: << File.dirname(__FILE__) + '/lib'
 require 'file_cabinet'
 
-before do
-  @cabinet = FileCabinet.new(Sinatra::Application.public + "/files")
-end
-   
-not_found do
-  erb :not_found
-end 
-  
-get '/' do
-  erb :index
-end
-
-post '/' do
-  @folder = @cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])
-  redirect folder_path(@folder)
-end
-
-get '/:id' do
-  @folder = @cabinet.find(params[:id])
-  raise Sinatra::NotFound if @folder.nil?
-  erb :fileinfo  
-end
-
-helpers do
+class Frankyshares < Sinatra::Base
   include Rack::Utils  
-  alias_method :h, :escape_html  
   include ActionView::Helpers::DateHelper
+  alias_method :h, :escape_html  
+
+  # Options
+  enable :static
+  set :root, File.dirname(__FILE__)
+  use_in_file_templates!
+
+  before do
+    @cabinet = FileCabinet.new(self.class.public + "/files")
+  end
+   
+  not_found do
+    erb :not_found
+  end 
   
-  # converts an integer to a readable file size
+  get '/' do
+    erb :index
+  end
+
+  post '/' do
+    @folder = @cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])
+    redirect folder_path(@folder)
+  end
+
+  get '/:id' do
+    @folder = @cabinet.find(params[:id])
+    raise Sinatra::NotFound if @folder.nil?
+    erb :fileinfo  
+  end
+
+
+  # Helper methods...
+
+  # Takes a number and returns a readable file size
   def file_size_string(fs)
     # n cuts off all decimal places after the second
     n = lambda{|f| f.to_s[/.*\..{0,2}/] }     
@@ -46,29 +54,28 @@ helpers do
       "#{n.call(fs/1024.0**3)} GBytes"
     end
   end
-  
+
   def file_path(file)
-    file.sub(Sinatra::Application.public,"")
+    file.sub(File.expand_path(self.class.public),"")
   end
-  
+
   def folder_path(folder)
     "/#{folder.id}"
   end
-  
+
   def folder_url(folder)
     root_url + folder_path(folder)
   end
-  
+
   # returns the base path of this app. FIXME isn't there a shorter/built in way?
   def root_url
     # NOTE there was a problem with request.port, when using sockets (Thin), 
     # so here we are not assembling the url (request.schema + ... + 
     # request.port), but just using a (dirty?) regexp..
-    request.url.match(/(^.*\/{2}[^\/]*)/)[1]
+    @request.url.match(/(^.*\/{2}[^\/]*)/)[1]
   end
-end
 
-use_in_file_templates!
+end
 
 __END__
 
