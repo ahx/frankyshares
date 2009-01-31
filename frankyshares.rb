@@ -1,8 +1,7 @@
 require 'rubygems'
 require 'sinatra/base'
 require 'action_view'
-$: << File.dirname(__FILE__) + '/lib'
-require 'file_cabinet'
+require 'lib/file_cabinet'
 
 class Frankyshares < Sinatra::Base
   include Rack::Utils  
