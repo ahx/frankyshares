@@ -1,4 +1,4 @@
-require 'app'
+require 'frankyshares'
 
 {
     # FIXME I don't know, what this run option means
