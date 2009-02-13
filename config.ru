@@ -1,9 +1,7 @@
 require 'frankyshares'
 
-{
-    # FIXME I don't know, what this run option means
-    :run => false,
-    :environment => :production
+{ 
+  :environment => :development
 }.each { |k, v| Frankyshares.set(k, v) }
 
 run Frankyshares

@@ -1,6 +1,9 @@
+# std
 require 'test/unit'
-require 'rubygems'
-require 'context'
 require 'fileutils'
 require 'tmpdir'
-$LOAD_PATH << File.dirname(__FILE__) + '/../lib'
+# gems
+require 'rubygems'
+require 'sinatra/test'
+# lib
+require File.dirname(__FILE__) + '/../frankyshares'
