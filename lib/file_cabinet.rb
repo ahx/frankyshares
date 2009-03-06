@@ -28,6 +28,13 @@ class FileCabinet
     FileFolder.new(f) if File.directory?(f) 
   end
   
+  # Returns all folders in this file cabin
+  def folders
+    Dir.glob(@files_path + '/*').
+    map{ |f| find(File.basename(f))}.
+    compact
+  end
+  
   # Add a file to the cabinet
   def add_file(file, options = {})      
     raise(FileDoesNotExist, "Cannot add file, because it already exists!") if !File.exist?(file)

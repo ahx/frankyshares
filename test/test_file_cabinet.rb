@@ -1,4 +1,6 @@
-require File.dirname(__FILE__) + '/../test_helper'
+# FIXME Make tests work with Ruby 1.9. By now context does not work with Ruby1.9, so these tests don't work
+
+require File.dirname(__FILE__) + '/helpers'
 
 class TestFileCabinet < Test::Unit::TestCase
   TEST_DIR = Dir.tmpdir + "/#{self.name}-test-files"
@@ -20,6 +22,9 @@ class TestFileCabinet < Test::Unit::TestCase
       assert File.file?(folder.file)
     end
 
+    should "list all folders" do
+      assert @cabinet.folders.map{|f| f.file }.include?(@folder.file)
+    end
 
     context "that has been destroyed" do
       before do
