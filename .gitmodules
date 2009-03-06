@@ -1,3 +1,6 @@
 [submodule "lib/webrat"]
 	path = lib/webrat
 	url = git://github.com/ahaller/webrat.git
+[submodule "lib/chronic_duration"]
+	path = lib/chronic_duration
+	url = git://github.com/hpoydar/chronic_duration.git

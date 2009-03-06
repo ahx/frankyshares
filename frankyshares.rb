@@ -1,11 +1,10 @@
-require 'rubygems'
 require 'sinatra/base'
-# require 'action_view'
 require File.dirname(__FILE__) + '/lib/file_cabinet'
+$LOAD_PATH << File.dirname(__FILE__) + '/lib/chronic_duration/lib'
+require 'chronic_duration'
 
 class Frankyshares < Sinatra::Base
   include Rack::Utils  
-  # include ActionView::Helpers::DateHelper
   alias_method :h, :escape_html
 
   # Options
@@ -52,6 +51,12 @@ class Frankyshares < Sinatra::Base
     elsif fs <= 1024**4
       "#{n.call(fs/1024.0**3)} GBytes"
     end
+  end
+  
+  def time_until_destruction_of(folder)
+    twodays = 60*60*48
+    deadline = File.mtime(folder.file).to_i + twodays
+    ChronicDuration.output(deadline - Time.now.to_i, :format => :long)
   end
 
   def file_path(file)
@@ -122,7 +127,7 @@ __END__
     <%=h file_size_string(File.size(@folder.file)) %><br />
     <b>Uploaded at:</b> <%= File.ctime(@folder.file).to_s %><br />
     <p> 
-      This file will be destroyed in <%# time_ago_in_words(File.ctime(@folder.file) + 172800) %> <%# 2 days  %>
+      This file will be destroyed in <%= time_until_destruction_of(@folder) %>
     </p>
     <p>
       <a href="mailto:?subject=&body=Hi there! I have uploaded a file for you. You can download it here: <%=h folder_url(@folder) %>" title="email this page">email this page</a>
