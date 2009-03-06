@@ -9,7 +9,7 @@ class Frankyshares < Sinatra::Base
 
   # Options
   set :root, File.dirname(__FILE__)
-  set :time_to_expire, 60*60*48  # Two days
+  set :time_to_expire, 172800  # Two days
   
   # Settings
   use_in_file_templates!
