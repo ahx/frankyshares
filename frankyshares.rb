@@ -8,9 +8,12 @@ class Frankyshares < Sinatra::Base
   alias_method :h, :escape_html
 
   # Options
-  enable :static
   set :root, File.dirname(__FILE__)
+  set :time_to_expire, 60*60*48  # Two days
+  
+  # Settings
   use_in_file_templates!
+  enable :static
 
   before do
     @cabinet = FileCabinet.new(self.class.public + "/files")
@@ -53,9 +56,12 @@ class Frankyshares < Sinatra::Base
     end
   end
   
-  def time_until_destruction_of(folder)
-    twodays = 60*60*48
-    deadline = File.mtime(folder.file).to_i + twodays
+  def expire_time_in_words
+    ChronicDuration.output(options.time_to_expire, :format => :long)
+  end
+  
+  def time_until_expire_in_words(folder)    
+    deadline = File.mtime(folder.file).to_i + options.time_to_expire
     ChronicDuration.output(deadline - Time.now.to_i, :format => :long)
   end
 
@@ -110,7 +116,7 @@ __END__
     <p>
       <label for="file">File</label>
       <input name="file" size="30" type="file" />      
-      <p>The file will be destroyed after two days!</p>
+      <p>The file will be destroyed after <%= expire_time_in_words %>!</p>
     </p>
     <p>
       <input class="upload_file" name="upload" type="submit" value="Share this file now" />
@@ -127,7 +133,7 @@ __END__
     <%=h file_size_string(File.size(@folder.file)) %><br />
     <b>Uploaded at:</b> <%= File.ctime(@folder.file).to_s %><br />
     <p> 
-      This file will be destroyed in <%= time_until_destruction_of(@folder) %>
+      This file will be destroyed in <%= time_until_expire_in_words(@folder) %>
     </p>
     <p>
       <a href="mailto:?subject=&body=Hi there! I have uploaded a file for you. You can download it here: <%=h folder_url(@folder) %>" title="email this page">email this page</a>
@@ -141,5 +147,5 @@ __END__
 @@ not_found
   <h2>File not found</h2>
   <p>Either you got the wrong adress or this file has expired. <br />
-    <span class="light-description">(Uploaded files get deleted after two days.)</span></p>
+    <span class="light-description">(Uploaded files get deleted after <%= expire_time_in_words %>.)</span></p>
   
