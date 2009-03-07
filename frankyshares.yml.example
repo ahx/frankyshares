@@ -1,7 +1,7 @@
 # this is an example for a thin config file
 
 --- 
-pid: /tmp/pids/thin.pid 
+pid: /tmp/pids/thin_frankyshares.pid 
 socket: /tmp/thin_frankyshares.sock
 # port: 3333
 log: log/thin.log
