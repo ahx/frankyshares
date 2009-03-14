@@ -1,12 +1,12 @@
 require 'rubygems'
 require 'sinatra/base'
-require 'action_view'
-require 'lib/file_cabinet'
+# require 'action_view'
+require File.dirname(__FILE__) + '/lib/file_cabinet'
 
 class Frankyshares < Sinatra::Base
   include Rack::Utils  
-  include ActionView::Helpers::DateHelper
-  alias_method :h, :escape_html  
+  # include ActionView::Helpers::DateHelper
+  alias_method :h, :escape_html
 
   # Options
   enable :static
@@ -33,7 +33,7 @@ class Frankyshares < Sinatra::Base
   get '/:id' do
     @folder = @cabinet.find(params[:id])
     raise Sinatra::NotFound if @folder.nil?
-    erb :fileinfo  
+    erb :fileinfo
   end
 
 
@@ -76,6 +76,9 @@ class Frankyshares < Sinatra::Base
 
 end
 
+# Run it
+Frankyshares.run! if $0 == __FILE__
+
 __END__
 
 @@ layout
@@ -98,14 +101,14 @@ __END__
 
 @@ index
   <h2>Share a file</h2>
-  <form action="/" enctype="multipart/form-data" method="post">    
+  <form id="upload_form" action="/" enctype="multipart/form-data" method="post">    
     <p>
-      <label for="share_file">File</label>
-      <input name="file" size="30" type="file" />        
+      <label for="file">File</label>
+      <input name="file" size="30" type="file" />      
       <p>The file will be destroyed after two days!</p>
     </p>
     <p>
-      <input class="upload_file" name="commit" type="submit" value="Upload the file" />
+      <input class="upload_file" name="upload" type="submit" value="Share this file now" />
     </p>  
   </form>
 
@@ -117,9 +120,9 @@ __END__
   <div>
     <b>File size:</b>
     <%=h file_size_string(File.size(@folder.file)) %><br />
-    <b>Uploaded at:</b> <%= File.ctime(@folder.file).to_s(:long) %><br />
+    <b>Uploaded at:</b> <%= File.ctime(@folder.file).to_s %><br />
     <p> 
-      This file will be destroyed in <%= time_ago_in_words(File.ctime(@folder.file) + 172800) %> <%# 2 days  %>
+      This file will be destroyed in <%# time_ago_in_words(File.ctime(@folder.file) + 172800) %> <%# 2 days  %>
     </p>
     <p>
       <a href="mailto:?subject=&body=Hi there! I have uploaded a file for you. You can download it here: <%=h folder_url(@folder) %>" title="email this page">email this page</a>
@@ -128,7 +131,8 @@ __END__
   <p>
     <a href="/">Share another file</a>
   </p> 
-  
+
+
 @@ not_found
   <h2>File not found</h2>
   <p>Either you got the wrong adress or this file has expired. <br />
