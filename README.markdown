@@ -1,24 +1,33 @@
 Frankyshares
 ===============================================
 
-This is a simple rapidshare-like sinatra app, which does not use a database. 
-It's mostly written for educating purpose, but it's quite useful acutally.
+This is a simple rapidshare-like webapp.
 
-== You can
+== What you can do with it
 * upload a file
 * see a info-page with filename and size
 * download the file
 
-== Install
+== Install it
 * checkout submodules with "git submodule init; git submodule update"
-* run it with "ruby frankyshares.rb" (in development) or "thin -R config.ru start" or any other way
 * There is a 'rake cron' task to delete old files, which you should run regularly
 
-== Configuration
-You can set the expire time in seconds, default is two days
-Frankyshares.expire_time = 172800   # two days
+== Run it
+Use these commands:
+    rackup
+or
+    ruby frankyshares.rb
+or like every other Sinatra / Rack-App
+
+== Options
+You can set the expire time in seconds, default is two days:
+    Frankyshares.expire_time = 172800   # two days
+
 
 Enjoy.
 
 
-TODO context does not support Ruby1.9's Tes::Unit right now, so the unit tests are non functional with Ruby1.9 right now.
+== TODO
+context does not support Ruby1.9's Tes::Unit right now, so the unit-tests are non-functional with Ruby1.9 right now.
+
+Maybe add some anti-flooding mechanism.
