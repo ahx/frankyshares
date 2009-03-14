@@ -1,21 +1,34 @@
 Frankyshares
 ===============================================
 
-This is a simple rapidshare-like sinatra app, which does not use a database. 
-This is mostly written for educating purpose.
+This is a simple rapidshare-like sinatra app. 
+It's mostly written for educating purpose, but it's quite useful.
 
-== You can
+== What you can do with it
 * upload a file
 * see a info-page with filename and size
-* download the file ...
+* download the file
 
-== Inner workings
-The app consists of two parts:
-* a FileCabin class, that manages the files-folder to find and save files
-* and the Sinatra app, that provides a web interface. 
+== Install it
+* checkout submodules with "git submodule init; git submodule update"
+* There is a 'rake cron' task to delete old files, which you should run regularly
 
+== Run it
+Use these commands:
+    rackup
+or
+    ruby frankyshares.rb
+or like every other Sinatra / Rack-App
 
-There is a bash-script that should delete old uploaded files. This could be used for a cron-job or the like. 
+== Configuration
+You can set the expire time in seconds, default is two days:
+    Frankyshares.expire_time = 172800   # two days
 
 
 Enjoy.
+
+
+== TODO
+context does not support Ruby1.9's Tes::Unit right now, so the unit-tests are non-functional with Ruby1.9 right now.
+
+Maybe add some anti-flooding mechanism (nginx).
