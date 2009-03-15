@@ -10,13 +10,14 @@ class Frankyshares < Sinatra::Base
   # Options
   set :root, File.dirname(__FILE__)
   set :time_to_expire, 172800  # Two days
+  set :disk_quota, nil         # Set total space available in BYTES
   
   # Settings
   use_in_file_templates!
   enable :static
 
   before do
-    @cabinet = FileCabinet.new(self.class.public + "/files")
+    @cabinet = FileCabinet.new(options.public + "/files", :quota => options.disk_quota)
   end
    
   not_found do
@@ -28,8 +29,14 @@ class Frankyshares < Sinatra::Base
   end
 
   post '/' do
-    @folder = @cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])
-    redirect folder_path(@folder)
+    begin
+      @folder = @cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])      
+      redirect folder_path(@folder)
+    rescue FileCabinet::FileDoesNotExist
+      erb :index # '/'  # fail silently
+    rescue FileCabinet::QuotaExceeded
+      erb :quota_exceeded 
+    end    
   end
 
   get '/:id' do
@@ -143,6 +150,10 @@ __END__
     <a href="/">Share another file</a>
   </p> 
 
+@@ quota_exceeded
+  <h2>Sorry, i can't take anymore!</h2>  
+  <p>There is not enough space available to save your file right now. <br /> 
+  Maybe you want to try uploading the file again in a few hours, after some old files have been deleted automatically.</p>
 
 @@ not_found
   <h2>File not found</h2>

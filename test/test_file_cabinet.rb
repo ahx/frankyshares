@@ -13,8 +13,8 @@ class TestFileCabinet < Test::Unit::TestCase
     before do  
       FileUtils.mkdir_p(TEST_DIR + '/xyz')
       FileUtils.touch(TEST_DIR + '/xyz/testfile')  
-      @cabinet = FileCabinet.new(TEST_DIR)    
-      @folder = @cabinet.find("xyz")
+      @cabinet = FileCabinet.new(TEST_DIR)
+      @folder = @cabinet.find("xyz")              
     end
 
     should "be findable" do
@@ -40,24 +40,34 @@ class TestFileCabinet < Test::Unit::TestCase
         assert !File.exist?(@filepath)
       end
     end
-  
+            
+    test "an empty folder should not be findable" do
+      FileUtils.mkdir_p(TEST_DIR + "/empty")
+      assert_nil @cabinet.find("empty")
+    end
+    
     after do
       delete_test_dir
     end
   end
+  
 
-
-  context "When a new file is added" do
+  context "When a new file was added" do
     before do
       FileUtils.mkdir(TEST_DIR)  
       @cabinet = FileCabinet.new(TEST_DIR)
-      @file_to_be_added = FileUtils.touch(TEST_DIR + '/my_uploaded_file').first      
+      @file_to_be_added = File.dirname(__FILE__) + '/data/test.png'
       # adding the file!
       @folder = @cabinet.add_file(@file_to_be_added)
     end
   
     test "the add method return the same as finding the file with find" do
         assert_equal(@folder.file, @cabinet.find(@folder.id).file)
+    end
+    
+    test "filesize should be about this big" do
+      about = (20_000..30_000)
+      assert about.include?(@cabinet.filesize), "filesize is not in expected range. It's #{@cabinet.filesize}"
     end
   
     it "should be findable" do
@@ -71,9 +81,8 @@ class TestFileCabinet < Test::Unit::TestCase
     end
   
     it "should have retained its original filename" do
-      assert_equal("my_uploaded_file", File.basename(@folder.file))
-    end
-      
+      assert_equal("test.png", File.basename(@folder.file))
+    end          
     
     context "with a specific filename" do
       before do
@@ -85,7 +94,7 @@ class TestFileCabinet < Test::Unit::TestCase
         assert_equal("special", File.basename(@folder.file))
       end
     end  
-  
+          
     after do
       delete_test_dir
     end        
@@ -99,25 +108,26 @@ class TestFileCabinet < Test::Unit::TestCase
         FileCabinet.new("nonexistent folder")
       end
     end  
-  
-  
+    
     context "with an existing file cabinet" do
-      before do
-        FileUtils.mkdir_p(TEST_DIR + "/empty")  
-        @cabinet = FileCabinet.new(TEST_DIR)
+      before do 
+        FileUtils.mkdir(TEST_DIR)        
+      end
+
+      test "quota exceeded" do
+        @cabinet = FileCabinet.new(TEST_DIR, :quota => 1)  # quota in Bytes
+        @file_to_be_added = File.dirname(__FILE__) + '/data/test.png'
+        assert_raise(FileCabinet::QuotaExceeded) {  
+          @cabinet.add_file(@file_to_be_added)
+        }
       end
     
       test "when trying to add a non existing file" do
+        @cabinet = FileCabinet.new(TEST_DIR)
         assert_raise(FileCabinet::FileDoesNotExist) do
            @cabinet.add_file("nonexistent") 
          end
       end
-    
-      test "when the original file cannot be found inside a folder" do
-        assert_raise(FileCabinet::OriginalFileNotFound) do
-          assert @cabinet.find("empty")
-        end
-      end    
     
       after do
         delete_test_dir
