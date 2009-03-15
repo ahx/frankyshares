@@ -10,14 +10,14 @@ class Frankyshares < Sinatra::Base
   # Options
   set :root, File.dirname(__FILE__)
   set :time_to_expire, 172800  # Two days
-  set :disk_quota, nil         # Set total space available in BYTES
+  set :disk_quota, nil         # Set total space available in MBytes
   
   # Settings
   use_in_file_templates!
   enable :static
 
   before do
-    @cabinet = FileCabinet.new(options.public + "/files", :quota => options.disk_quota)
+    @cabinet = FileCabinet.new(options.public + "/files", :quota => options.disk_quota.to_i * 1048576) # FileCabinet takes Bytes, not MBytes
   end
    
   not_found do
@@ -48,7 +48,7 @@ class Frankyshares < Sinatra::Base
 
   # Helper methods...
 
-  # Takes a number and returns a readable file size
+  # Takes a number (Bytes) and returns a readable file size
   def file_size_string(fs)
     # n cuts off all decimal places after the second
     n = lambda{|f| f.to_s[/.*\..{0,2}/] }     
