@@ -12,8 +12,8 @@ What you can do with it
 
 Install it
 ----------
-* checkout submodules with "git submodule init; git submodule update"
-* There is a 'rake cron' task to delete old files, which you should run regularly
+Checkout submodules with 
+    git submodule update --init
 
 
 Run it
@@ -23,19 +23,17 @@ Use one of these commands:
 or
     ruby frankyshares.rb
 or do it like you would with every other Sinatra / Rack-App
+There is a 'rake cron' task to delete old files, which you should run regularly!:
+    rake cron
 
+The app just works on Ruby 1.9. To run the tests you need the test-unit gem though.
 
 Options
 -------
 You can set the expire time in seconds, default is two days:
-    Frankyshares.expire_time = 172800   # two days
+    Frankyshares.:time_to_expire = 36000 # 10hours (default is two days)
 
+As a (naive) anti-flooding mechanism, you can specify a maximum size of your storage, which will get checked on each write:
+    Frankyshares.disk_quota = 1024  # Maximum of 1GByte  (default is no limit)
 
 Enjoy.
-
-
-TODO
-----
-context does not support Ruby1.9's Tes::Unit right now, so the unit-tests are non-functional with Ruby1.9 right now.
-
-Maybe add some anti-flooding mechanism.

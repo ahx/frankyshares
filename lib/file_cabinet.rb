@@ -59,8 +59,7 @@ class FileCabinet
   # Add a file to the cabinet
   def add_file(new_file, options = {})
     raise(FileDoesNotExist, "Cannot add file, because it does not exist!") unless new_file && File.size?(new_file)
-    total = filesize + File.size(new_file)
-    raise(QuotaExceeded, "Cannot add file, because this file cabinet is full.") if quota && total > quota
+    check_disk_quota!(new_file)
     
     new_filename = options[:filename] || File.basename(new_file)
     new_id = generate_new_id(new_filename) 
@@ -85,6 +84,10 @@ class FileCabinet
   
   def generate_new_id(filename)
     "#{Time.now.to_i}#{rand(9)}".to_i.to_s(36)
+  end
+  def check_disk_quota!(new_file)
+    total = filesize + File.size(new_file)
+    raise(QuotaExceeded, "Cannot add file, because this file cabinet is full.") if quota && total > quota    
   end
   
   class FileFolder
