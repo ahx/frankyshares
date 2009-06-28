@@ -10,20 +10,22 @@ What you can do with it
 * download the file
 
 
-Install it
-----------
-Checkout submodules with 
+Download and run it
+-------------------
+Clone git repository
+    git clone git://github.com/ahaller/frankyshares.git
+    
+Don't forget to checkout submodules
+    cd frankyshares
     git submodule update --init
-
-
+    
 Run it
-------
-Use one of these commands:
+
     rackup
 or
     ruby frankyshares.rb
-or do it like you would with every other Sinatra / Rack-App
-There is a 'rake cron' task to delete old files, which you should run regularly!:
+
+There is a 'rake cron' task to delete old files, which you should run regularly:
     rake cron
 
 The app just works on Ruby 1.9. To run the tests you need the test-unit gem though.
