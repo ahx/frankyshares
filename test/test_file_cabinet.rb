@@ -2,6 +2,7 @@
 
 require File.dirname(__FILE__) + '/helpers'
 
+
 class TestFileCabinet < Test::Unit::TestCase
   TEST_DIR = Dir.tmpdir + "/#{self.name}-test-files"
 

@@ -1,5 +1,8 @@
 require 'rake'
-require 'frankyshares'
+require 'rake/testtask'
+require File.dirname(__FILE__) + '/frankyshares'
+
+task :default => :test
 
 desc "Delete expired files"
 task :cron do
@@ -7,7 +10,6 @@ task :cron do
   root = Frankyshares.public + "/files"
   delete_old_files_in(root)
 end
-
 
 def delete_old_files_in(root)
   puts "Clean up old files in #{root.inspect}"
@@ -21,4 +23,10 @@ def delete_old_files_in(root)
     end
   end
   puts "done. #{deleted.length} folders deleted."
+end
+
+Rake::TestTask.new(:test) do |t|
+  t.libs << File.dirname(__FILE__)
+  t.test_files = FileList['test/test*.rb']
+  t.verbose = true
 end
