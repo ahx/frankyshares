@@ -8,7 +8,7 @@ class TestFileCabinet < Test::Unit::TestCase
   end
 
   context "An existing file" do
-    before do  
+    setup do  
       FileUtils.mkdir_p(TEST_DIR + '/xyz')
       FileUtils.touch(TEST_DIR + '/xyz/testfile')  
       @cabinet = FileCabinet.new(TEST_DIR)
@@ -25,7 +25,7 @@ class TestFileCabinet < Test::Unit::TestCase
     end
 
     context "that has been destroyed" do
-      before do
+      setup do
         @filepath = @folder.file  # saving file path
         @folder.destroy
       end
@@ -44,14 +44,14 @@ class TestFileCabinet < Test::Unit::TestCase
       assert_nil @cabinet.find("empty")
     end
     
-    after do
+    teardown do
       delete_test_dir
     end
   end
   
 
   context "When a new file was added" do
-    before do
+    setup do
       FileUtils.mkdir(TEST_DIR)  
       @cabinet = FileCabinet.new(TEST_DIR)
       @file_to_be_added = File.dirname(__FILE__) + '/data/test.png'
@@ -68,32 +68,32 @@ class TestFileCabinet < Test::Unit::TestCase
       assert about.include?(@cabinet.filesize), "filesize is not in expected range. It's #{@cabinet.filesize}"
     end
   
-    it "should be findable" do
+    test "should be findable" do
       assert_not_nil folder = @cabinet.find(@folder.id)
       assert File.file?(folder.file)
     end
       
-    it "should be a copy of the original file but not the same file" do
+    test "should be a copy of the original file but not the same file" do
       assert FileUtils.identical?(@file_to_be_added, @folder.file)
       assert_not_equal(@tmp_file, @folder.file)
     end
   
-    it "should have retained its original filename" do
+    test "should have retained its original filename" do
       assert_equal("test.png", File.basename(@folder.file))
     end          
     
     context "with a specific filename" do
-      before do
+      setup do
         # adding the file
         @folder = @cabinet.add_file(@file_to_be_added, :filename => "special")
       end
     
-      it "should have that specific filename" do
+      test "should have that specific filename" do
         assert_equal("special", File.basename(@folder.file))
       end
     end  
           
-    after do
+    teardown do
       delete_test_dir
     end        
   end
@@ -108,7 +108,7 @@ class TestFileCabinet < Test::Unit::TestCase
     end  
     
     context "with an existing file cabinet" do
-      before do 
+      setup do 
         FileUtils.mkdir(TEST_DIR)        
       end
 
@@ -127,7 +127,7 @@ class TestFileCabinet < Test::Unit::TestCase
          end
       end
     
-      after do
+      teardown do
         delete_test_dir
       end      
     end
