@@ -1,7 +1,7 @@
 body {
 background-color: #F6F;
 color: #000;
-font-size: 130%;
+font-size: 20px;
 }
 body,p,ol,ul,td,th {
 font-family: helvetica,sans-serif;
@@ -25,8 +25,8 @@ input[type=submit].upload_file {
 width: 20em;
 }
 #page {
-width: 33em;
-margin: 0 auto;
+width: 19em;
+margin: 3em auto 0 auto;
 }
 #site-title a,#site-title a:visited,#site-title a:hover {
 text-decoration: none;

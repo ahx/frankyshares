@@ -107,11 +107,11 @@ Frankyshares.run! if $0 == __FILE__
 __END__
 
 @@ layout
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<link rel="stylesheet" href="/app.css" type="text/css" media="screen" title="colorfull disk" charset="utf-8">
+<!DOCTYPE html>
+<html>
 <head>
+  <link rel="icon" type="image/png" href="/favicon.png" />  
+  <link rel="stylesheet" href="/app.css" type="text/css" media="screen" title="colorfull disk" charset="utf-8">
   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
   <title>I Haz Filesharez!</title>
 </head>
