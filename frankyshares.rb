@@ -37,7 +37,8 @@ class Frankyshares < Sinatra::Base
 
   post '/' do
     begin
-      @folder = @cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename])      
+      raise FileCabinet::FileDoesNotExist unless params[:file]
+      @folder = @cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename]) 
       redirect folder_path(@folder)
     rescue FileCabinet::FileDoesNotExist
       erb :index # '/'  # fail silently
