@@ -16,7 +16,7 @@ a:hover {
 color: #fff;
 background-color: #222;
 }
-.light-description {
+.description {
   opacity: 0.6;
   -moz-opacity: 0.6;
   filter:alpha(opacity=60);
