@@ -32,6 +32,15 @@ Options
 You can set the expire time in seconds, default is two days:
     Frankyshares.:time_to_expire = 36000 # 10hours (default is two days)
 
+Dependencies
+------------
+- Sinatra
+- Rack (included as submoule) (git://github.com/rack/rack.git)
+- chronic_duration (included as submoule) (git://github.com/hpoydar/chronic_duration.git)
+
+For testing
+- time_trave (included as submoule) (http://github.com/notahat/time_travel)
+
 Changes & TODOs
 ---------------
 I removed the 'rake cron' task to delete expired files. Right now, these get only deleted, when the info page ("/foo") is requestet, not the actual file ("/foo/file.txt").

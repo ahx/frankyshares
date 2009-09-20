@@ -7,8 +7,6 @@ require 'time_travel'
 
 class TestFrankyshares < Test::Unit::TestCase
   include Rack::Test::Methods
-  TEST_DIR = File.dirname(__FILE__) + '/data'  
-  Frankyshares.upload_dir = TEST_DIR
   
   TEST_DIR = File.dirname(__FILE__) + '/data'  
   Frankyshares.upload_dir = TEST_DIR
