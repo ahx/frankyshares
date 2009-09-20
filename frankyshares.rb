@@ -4,32 +4,21 @@ require 'sinatra/base'
 # We want rack's edge (>1.0.0) version, because of some crucial fixes for Ruby 1.9
 require File.dirname(__FILE__) + '/lib/rack/lib/rack'
 require File.dirname(__FILE__) + '/lib/rack/lib/rack/utils'
-
-require File.dirname(__FILE__) + '/lib/file_cabinet'
 $LOAD_PATH << File.dirname(__FILE__) + '/lib/chronic_duration/lib'
 require 'chronic_duration'
 
-
 class Frankyshares < Sinatra::Base
-  include Rack::Utils  
-  alias_method :h, :escape_html
+  include Rack::Utils
 
   # Options
   set :root, File.dirname(__FILE__)
   set :time_to_expire, 172800  # Two days
-  set :disk_quota, nil         # Set total space available in MBytes
   set :upload_dir, self.public + "/files"
-  
-  # Settings
   use_in_file_templates!
   enable :static
   
   configure do
-    FileUtils.mkdir_p(self.upload_dir)    
-  end
-  
-  before do
-    @cabinet = FileCabinet.new(options.upload_dir, :quota => options.disk_quota.to_i * 1048576) # FileCabinet takes Bytes, not MBytes
+    FileUtils.mkdir_p(self.upload_dir)
   end
    
   not_found do
@@ -41,23 +30,20 @@ class Frankyshares < Sinatra::Base
   end
 
   post '/' do
-    begin
-      raise FileCabinet::FileDoesNotExist unless params[:file]
-      @folder = @cabinet.add_file(params[:file][:tempfile].path, :filename => params[:file][:filename]) 
-      redirect folder_path(@folder)
-    rescue FileCabinet::FileDoesNotExist
-      erb :index # '/'  # fail silently
-    rescue FileCabinet::QuotaExceeded
-      erb :quota_exceeded 
-    end    
+    if params[:file] # fail silently if empty
+      @folder = add_file(params[:file][:tempfile].path, params[:file][:filename])      
+      redirect @folder.sub(File.expand_path(self.class.upload_dir),"")
+    end
+    erb :index
   end
 
-  get '/:id' do
-    @folder = @cabinet.find(params[:id])
-    raise Sinatra::NotFound if @folder.nil?
+  get '/:id' do |id|
+    @file = find_first_file_in("#{options.upload_dir}/#{id}")
+    pass if @file.nil?
+    @expires_in = time_until_file_expires(@file)
+    @expires_in_words = time_in_words(@expires_in)
     erb :fileinfo
   end
-
 
   # Helper methods...
 
@@ -80,23 +66,14 @@ class Frankyshares < Sinatra::Base
     ChronicDuration.output(options.time_to_expire, :format => :long)
   end
   
-  def time_until_expire_in_words(folder)    
-    deadline = File.mtime(folder.file).to_i + options.time_to_expire
-    ChronicDuration.output(deadline - Time.now.to_i, :format => :long)
+  def time_in_words(time)        
+    ChronicDuration.output(time - Time.now.to_i, :format => :long)
   end
-
-  def file_path(file)
-    file.sub(File.expand_path(self.class.public),"")
+  
+  def download_path(path)
+    path.sub(File.expand_path(self.class.public),"")
   end
-
-  def folder_path(folder)
-    "/#{folder.id}"
-  end
-
-  def folder_url(folder)
-    root_url + folder_path(folder)
-  end
-
+  
   # returns the base path of this app. FIXME isn't there a shorter/built in way?
   def root_url
     # NOTE there was a problem with request.port, when using sockets (Thin), 
@@ -105,6 +82,33 @@ class Frankyshares < Sinatra::Base
     @request.url.match(/(^.*\/{2}[^\/]*)/)[1]
   end
 
+  def time_until_file_expires(file)
+    File.mtime(file).to_i + options.time_to_expire
+  end
+
+  
+  private
+  
+  def add_file(new_file, new_filename)
+    raise("Cannot add file, because it does not exist!") unless new_file && File.size?(new_file)    
+    new_id = generate_new_id(new_filename)
+    path = File.join(options.upload_dir, new_id) 
+    # Make folder..
+    FileUtils.mkdir_p(path)
+    # and copy file..
+    file = File.join(path, new_filename)
+    FileUtils.cp(new_file, file)
+    path
+  end
+  
+  def find_first_file_in(path)
+    Dir.glob("#{path}/[^.]*").first    
+  end
+  
+  def generate_new_id(filename)
+    # FIXME I don't like randomness
+    "#{Time.now.to_i}#{rand(9)}".to_i.to_s(36)
+  end
 end
 
 # Run it
@@ -146,30 +150,25 @@ __END__
 
 @@ fileinfo
   <h2>
-    <a href="<%=h file_path(@folder.file) %>" title="Download this file now!">Download <i><%=h File.basename(@folder.file) %></i> now</a>
+    <a href="<%=escape_html download_path(@file) %>" title="Download this file now!">Download <i><%=escape_html File.basename(@file) %></i> now</a>
   </h2> 
   <div>
     <b>File size:</b>
-    <%=h file_size_string(File.size(@folder.file)) %><br />
-    <b>Uploaded at:</b> <%= File.ctime(@folder.file).to_s %><br />
+    <%= file_size_string(File.size(@file)) %><br />
+    <b>Uploaded at:</b> <%= File.ctime(@file).to_s %><br />
     <p> 
-      This file will be destroyed in <%= time_until_expire_in_words(@folder) %>
+      This file will be destroyed in <%= @expires_in_words %>
     </p>
     <p>
-      <a href="mailto:?subject=&body=Hi there! I have uploaded a file for you. You can download it here: <%=h folder_url(@folder) %>" title="email this page">email this page</a>
+      <a href="mailto:?subject=&body=Hi there! I have uploaded a file for you. You can download it here: <%=escape_html request.url %>" title="email this page">email this page</a>
     </p>  
   </div>  
   <p>
     <a href="/">Share another file</a>
   </p> 
 
-@@ quota_exceeded
-  <h2>Sorry, i can't take anymore!</h2>  
-  <p>There is not enough space available to save your file right now. <br /> 
-  Maybe you want to try uploading the file again in a few hours, after some old files have been deleted automatically.</p>
-
 @@ not_found
   <h2>File not found</h2>
   <p>Either you got the wrong adress or this file has expired. <br />
-    <span class="light-description">(Uploaded files get deleted after <%= expire_time_in_words %>.)</span></p>
+    <span class="description">(Uploaded files get deleted after <%= expire_time_in_words %>.)</span></p>
   

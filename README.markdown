@@ -35,7 +35,4 @@ Options
 You can set the expire time in seconds, default is two days:
     Frankyshares.:time_to_expire = 36000 # 10hours (default is two days)
 
-As a (naive) anti-flooding mechanism, you can specify a maximum size of your storage, which will get checked on each write:
-    Frankyshares.disk_quota = 1024  # Maximum of 1GByte  (default is no limit)
-
 Enjoy.
