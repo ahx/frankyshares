@@ -18,13 +18,18 @@ class Frankyshares < Sinatra::Base
   set :root, File.dirname(__FILE__)
   set :time_to_expire, 172800  # Two days
   set :disk_quota, nil         # Set total space available in MBytes
+  set :upload_dir, self.public + "/files"
   
   # Settings
   use_in_file_templates!
   enable :static
-
+  
+  configure do
+    FileUtils.mkdir_p(self.upload_dir)    
+  end
+  
   before do
-    @cabinet = FileCabinet.new(options.public + "/files", :quota => options.disk_quota.to_i * 1048576) # FileCabinet takes Bytes, not MBytes
+    @cabinet = FileCabinet.new(options.upload_dir, :quota => options.disk_quota.to_i * 1048576) # FileCabinet takes Bytes, not MBytes
   end
    
   not_found do
