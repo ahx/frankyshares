@@ -25,14 +25,16 @@ Run it
 or
     ruby frankyshares.rb
 
-There is a 'rake cron' task to delete old files, which you should run regularly:
-    rake cron
-
 The app just works on Ruby 1.9. To run the tests you need the test-unit gem though.
 
 Options
 -------
 You can set the expire time in seconds, default is two days:
     Frankyshares.:time_to_expire = 36000 # 10hours (default is two days)
+
+Changes & TODOs
+---------------
+I removed the 'rake cron' task to delete expired files. Right now, these get only deleted, when the info page ("/foo") is requestet, not the actual file ("/foo/file.txt").
+TODO Restore background job to delete expired files.
 
 Enjoy.
