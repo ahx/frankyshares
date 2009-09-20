@@ -7,6 +7,9 @@ require File.dirname(__FILE__) + '/lib/rack/lib/rack/utils'
 $LOAD_PATH << File.dirname(__FILE__) + '/lib/chronic_duration/lib'
 require 'chronic_duration'
 
+# TODO Add a "rake cron" task to delete expired files. Right now, these get only 
+# deleted, when the info page ("/foo") is requestet, not the actual file ("/foo/file.txt")
+
 class Frankyshares < Sinatra::Base
   include Rack::Utils
 
@@ -38,9 +41,14 @@ class Frankyshares < Sinatra::Base
   end
 
   get '/:id' do |id|
-    @file = find_first_file_in("#{options.upload_dir}/#{id}")
-    pass if @file.nil?
+    folder = "#{options.upload_dir}/#{id}"
+    @file = find_first_file_in(folder)
+    pass unless @file
     @expires_in = time_until_file_expires(@file)
+    if @expires_in <= 0
+      destroy!(folder)
+      pass
+    end
     @expires_in_words = time_in_words(@expires_in)
     erb :fileinfo
   end
@@ -62,12 +70,15 @@ class Frankyshares < Sinatra::Base
     end
   end
   
-  def expire_time_in_words
-    ChronicDuration.output(options.time_to_expire, :format => :long)
+  def time_to_expire_in_words
+    time_in_words(options.time_to_expire)
+  end
+  def time_in_words(seconds)        
+    ChronicDuration.output(seconds, :format => :long)
   end
   
-  def time_in_words(time)        
-    ChronicDuration.output(time - Time.now.to_i, :format => :long)
+  def time_until_file_expires(file)
+    File.mtime(file).to_i + options.time_to_expire - Time.now.to_i
   end
   
   def download_path(path)
@@ -82,12 +93,12 @@ class Frankyshares < Sinatra::Base
     @request.url.match(/(^.*\/{2}[^\/]*)/)[1]
   end
 
-  def time_until_file_expires(file)
-    File.mtime(file).to_i + options.time_to_expire
-  end
-
   
   private
+  
+  def destroy!(folder)
+    FileUtils.rm_r(folder)
+  end
   
   def add_file(new_file, new_filename)
     raise("Cannot add file, because it does not exist!") unless new_file && File.size?(new_file)    
@@ -140,7 +151,7 @@ __END__
     <p>
       <label for="file">File</label>
       <input name="file" size="30" type="file" />      
-      <p>The file will be destroyed after <%= expire_time_in_words %>!</p>
+      <p>The file will be destroyed after <%= time_to_expire_in_words %>!</p>
     </p>
     <p>
       <input class="upload_file" name="upload" type="submit" value="Share this file now" />
@@ -170,5 +181,5 @@ __END__
 @@ not_found
   <h2>File not found</h2>
   <p>Either you got the wrong adress or this file has expired. <br />
-    <span class="description">(Uploaded files get deleted after <%= expire_time_in_words %>.)</span></p>
+    <span class="description">(Uploaded files get deleted after <%= time_to_expire_in_words %>.)</span></p>
   

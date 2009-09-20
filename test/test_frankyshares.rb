@@ -2,14 +2,18 @@ require 'test/unit'
 require 'rack/test' # http://github.com/brynary/rack-test
 require File.dirname(__FILE__) + '/../frankyshares'
 require 'fileutils'
+$LOAD_PATH << File.dirname(__FILE__) + '/../lib/time_travel/lib'
+require 'time_travel'
 
 class TestFrankyshares < Test::Unit::TestCase
   include Rack::Test::Methods
+  
   TEST_DIR = File.dirname(__FILE__) + '/data'  
   Frankyshares.upload_dir = TEST_DIR
+  Frankyshares.time_to_expire = 172800 # this is the default
   
   def app
-    Frankyshares.new    
+    Frankyshares.new        
   end
   
   def setup
@@ -30,6 +34,25 @@ class TestFrankyshares < Test::Unit::TestCase
   
   def test_post_empty_form
     post "/", "foo" => "bar"
-    last_response.ok?
+    assert last_response.ok?
+  end
+  
+  def test_not_found
+    get "/whatever"
+    assert last_response.not_found?
+  end
+  
+  def test_expire_file
+    # upload file
+    post "/", "file" => Rack::Test::UploadedFile.new(__FILE__)
+    assert last_response.redirect?
+    follow_redirect!
+    path = last_request.path
+    # fast-forward in time
+    at_time(Time.now + Frankyshares.time_to_expire) do
+      # request file info
+      get path
+      assert last_response.not_found?
+    end
   end
 end
