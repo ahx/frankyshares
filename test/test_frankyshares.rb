@@ -10,7 +10,7 @@ class TestFrankyshares < Test::Unit::TestCase
   
   TEST_DIR = File.dirname(__FILE__) + '/data'  
   Frankyshares.upload_dir = TEST_DIR
-  Frankyshares.time_to_expire = 172800 # this is the default
+  Frankyshares.time_to_expire = 10
   
   def app
     Frankyshares.new
@@ -22,12 +22,13 @@ class TestFrankyshares < Test::Unit::TestCase
   
   def teardown
     FileUtils.rm_r TEST_DIR
-  end  
+  end
   
   def test_upload_file        
     post "/", "file" => Rack::Test::UploadedFile.new(__FILE__)
     assert last_response.redirect?
-    follow_redirect!    
+    follow_redirect!
+    assert last_response.ok?
     assert last_request.path =~ /\/\w+/, "path should be something like '/abc123', but was #{last_request.path}"
     assert last_response.body.include?("test_frankyshares.rb"), "body should include filename but did not."
   end
@@ -48,11 +49,14 @@ class TestFrankyshares < Test::Unit::TestCase
     assert last_response.redirect?
     follow_redirect!
     path = last_request.path
+    assert Frankyshares.meta_store.key?(path.gsub("/", ""))
     # fast-forward in time
     at_time(Time.now + Frankyshares.time_to_expire) do
       # request file info
       get path
       assert last_response.not_found?
+      assert !File.exist?(app.options.upload_dir + path), "Folder should have been removed."
+      assert !Frankyshares.meta_store.key?(path.gsub("/", ""))
     end
   end
 end

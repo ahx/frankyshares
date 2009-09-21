@@ -6,6 +6,7 @@ require File.dirname(__FILE__) + '/lib/rack/lib/rack'
 require File.dirname(__FILE__) + '/lib/rack/lib/rack/utils'
 $LOAD_PATH << File.dirname(__FILE__) + '/lib/chronic_duration/lib'
 require 'chronic_duration'
+require 'moneta/basic_file' # gem install moneta
 
 # TODO Add a "rake cron" task to delete expired files. Right now, these get only 
 # deleted, when the info page ("/foo") is requestet, not the actual file ("/foo/file.txt")
@@ -16,14 +17,22 @@ class Frankyshares < Sinatra::Base
   # Options
   set :root, File.dirname(__FILE__)
   set :time_to_expire, 172800  # Two days
-  set :upload_dir, self.public + "/files"
+  set :upload_dir, self.public + "/files" # should be considered read-only
   use_in_file_templates!
   enable :static
+  
+  def self.meta_store
+    Moneta::BasicFile.new(:path => File.join(self.root, "meta_store"))
+  end
   
   configure do
     FileUtils.mkdir_p(self.upload_dir)
   end
-   
+  
+  before do
+    @meta_store = Frankyshares.meta_store
+  end
+  
   not_found do
     erb :not_found
   end 
@@ -34,26 +43,28 @@ class Frankyshares < Sinatra::Base
 
   post '/' do
     if params[:file] # fail silently if empty
-      @folder = add_file(params[:file][:tempfile].path, params[:file][:filename])      
-      redirect @folder.sub(File.expand_path(self.class.upload_dir),"")
+      folder = add_file(params[:file][:tempfile].path, params[:file][:filename])      
+      redirect folder.sub(File.expand_path(options.upload_dir),"")
     end
     erb :index
   end
 
-  get '/:id' do |id|
-    folder = "#{options.upload_dir}/#{id}"
-    @file = find_first_file_in(folder)
-    pass unless @file
-    @expires_in = time_until_file_expires(@file)
-    if @expires_in <= 0
-      destroy!(folder)
-      pass
+  get '/:id' do |key|
+    @meta = @meta_store[key]
+    unless @meta
+      FileUtils.rm_rf(File.join(options.upload_dir, key))
+      pass 
     end
-    @expires_in_words = time_in_words(@expires_in)
+    @file = @meta[:file]
+    # pass unless @file # File.exist?(@file)
     erb :fileinfo
   end
 
   # Helper methods...
+
+  def download_path(path)
+    path.sub(File.expand_path(options.public),"")
+  end
 
   # Takes a number (Bytes) and returns a readable file size
   def file_size_string(fs)
@@ -70,45 +81,28 @@ class Frankyshares < Sinatra::Base
     end
   end
   
-  def time_to_expire_in_words
-    time_in_words(options.time_to_expire)
-  end
-  def time_in_words(seconds)        
+  def expire_time_in_words(file)
+    seconds = File.mtime(file).to_i + options.time_to_expire - Time.now.to_i
     ChronicDuration.output(seconds, :format => :long)
   end
-  
-  def time_until_file_expires(file)
-    File.mtime(file).to_i + options.time_to_expire - Time.now.to_i
+      
+  def time_to_expire_in_words
+    ChronicDuration.output(options.time_to_expire, :format => :long)
   end
-  
-  def download_path(path)
-    path.sub(File.expand_path(self.class.public),"")
-  end
-  
-  # returns the base path of this app. FIXME isn't there a shorter/built in way?
-  def root_url
-    # NOTE there was a problem with request.port, when using sockets (Thin), 
-    # so here we are not assembling the url (request.schema + ... + 
-    # request.port), but just using a (dirty?) regexp..
-    @request.url.match(/(^.*\/{2}[^\/]*)/)[1]
-  end
-
   
   private
   
-  def destroy!(folder)
-    FileUtils.rm_r(folder)
-  end
-  
   def add_file(new_file, new_filename)
     raise("Cannot add file, because it does not exist!") unless new_file && File.size?(new_file)    
-    new_id = generate_new_id(new_filename)
-    path = File.join(options.upload_dir, new_id) 
+    key = generate_new_id(new_filename)
+    path = File.join(options.upload_dir, key) 
     # Make folder..
     FileUtils.mkdir_p(path)
-    # and copy file..
+    # copy file..
     file = File.join(path, new_filename)
     FileUtils.cp(new_file, file)
+    # save meta
+    @meta_store.store(key, {:file => file}, :expires_in => options.time_to_expire)
     path
   end
   
@@ -168,7 +162,7 @@ __END__
     <%= file_size_string(File.size(@file)) %><br />
     <b>Uploaded at:</b> <%= File.ctime(@file).to_s %><br />
     <p> 
-      This file will be destroyed in <%= @expires_in_words %>
+      This file will be destroyed in <%= expire_time_in_words(@file) %>
     </p>
     <p>
       <a href="mailto:?subject=&body=Hi there! I have uploaded a file for you. You can download it here: <%=escape_html request.url %>" title="email this page">email this page</a>
