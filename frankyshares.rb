@@ -101,6 +101,8 @@ class Frankyshares < Sinatra::Base
     # move file..
     file = File.join(path, new_filename)
     FileUtils.mv(new_file, file)
+    # FIXME This might be bad
+    FileUtils.chmod(0644, File.join(path, new_filename))
     # save meta
     @meta_store.store(key, {:file => file}, :expires_in => options.time_to_expire)
     path
