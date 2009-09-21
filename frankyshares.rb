@@ -98,9 +98,9 @@ class Frankyshares < Sinatra::Base
     path = File.join(options.upload_dir, key) 
     # Make folder..
     FileUtils.mkdir_p(path)
-    # copy file..
+    # move file..
     file = File.join(path, new_filename)
-    FileUtils.cp(new_file, file)
+    FileUtils.mv(new_file, file)
     # save meta
     @meta_store.store(key, {:file => file}, :expires_in => options.time_to_expire)
     path
