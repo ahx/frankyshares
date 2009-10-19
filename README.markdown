@@ -34,12 +34,12 @@ You can set the expire time in seconds, default is two days:
 
 Dependencies
 ------------
+- Rack Version >= 1.0.1
 - Sinatra
-- Rack (included as submoule) (git://github.com/rack/rack.git)
 - chronic_duration (included as submoule) (git://github.com/hpoydar/chronic_duration.git)
 - Moneta (http://github.com/wycats/moneta)
 
 For testing
-- time_trave (included as submoule) (http://github.com/notahat/time_travel)
+- time_travel (included as submoule) (http://github.com/notahat/time_travel)
 
 Enjoy.

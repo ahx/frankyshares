@@ -1,10 +1,6 @@
 [submodule "lib/chronic_duration"]
 	path = lib/chronic_duration
 	url = git://github.com/hpoydar/chronic_duration.git
-	
-[submodule "lib/rack"]
-	path = lib/rack
-	url = git://github.com/rack/rack.git
 [submodule "lib/time_travel"]
 	path = lib/time_travel
 	url = git://github.com/notahat/time_travel.git

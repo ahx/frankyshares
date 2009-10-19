@@ -1,15 +1,9 @@
 # encoding: UTF-8
 
 require 'sinatra/base'
-# We want rack's edge (>1.0.0) version, because of some crucial fixes for Ruby 1.9
-require File.dirname(__FILE__) + '/lib/rack/lib/rack'
-require File.dirname(__FILE__) + '/lib/rack/lib/rack/utils'
 $LOAD_PATH << File.dirname(__FILE__) + '/lib/chronic_duration/lib'
 require 'chronic_duration'
 require 'moneta/basic_file' # gem install moneta
-
-# TODO Add a "rake cron" task to delete expired files. Right now, these get only 
-# deleted, when the info page ("/foo") is requestet, not the actual file ("/foo/file.txt")
 
 class Frankyshares < Sinatra::Base
   include Rack::Utils
