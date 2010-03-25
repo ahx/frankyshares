@@ -1,9 +1,10 @@
-require 'test/unit'
-require 'rack/test' # http://github.com/brynary/rack-test
+#encoding: utf-8
+
 require File.dirname(__FILE__) + '/../frankyshares'
 require 'fileutils'
-$LOAD_PATH << File.dirname(__FILE__) + '/../lib/time_travel/lib'
-require 'time_travel'
+require 'rack/test'
+require 'test/unit'
+require 'timecop'
 
 class TestFrankyshares < Test::Unit::TestCase
   include Rack::Test::Methods
@@ -13,7 +14,7 @@ class TestFrankyshares < Test::Unit::TestCase
   Frankyshares.time_to_expire = 10
   
   def app
-    Frankyshares.new
+   Frankyshares
   end
   
   def setup
@@ -24,6 +25,11 @@ class TestFrankyshares < Test::Unit::TestCase
     FileUtils.rm_r TEST_DIR
   end
   
+  def test_homepage
+    get "/" 
+    assert last_response.ok?
+  end
+
   def test_upload_file        
     post "/", "file" => Rack::Test::UploadedFile.new(__FILE__)
     assert last_response.redirect?
@@ -39,7 +45,7 @@ class TestFrankyshares < Test::Unit::TestCase
   end
   
   def test_not_found
-    get "/whatever"
+    get "/whatever"    
     assert last_response.not_found?
   end
   
@@ -51,11 +57,11 @@ class TestFrankyshares < Test::Unit::TestCase
     path = last_request.path
     assert Frankyshares.meta_store.key?(path.gsub("/", ""))
     # fast-forward in time
-    at_time(Time.now + Frankyshares.time_to_expire) do
+    Timecop.freeze(Time.now + Frankyshares.time_to_expire) do
       # request file info
       get path
       assert last_response.not_found?
-      assert !File.exist?(app.options.upload_dir + path), "Folder should have been removed."
+      assert !File.exist?(Frankyshares.upload_dir + path), "Folder should have been removed."
       assert !Frankyshares.meta_store.key?(path.gsub("/", ""))
     end
   end

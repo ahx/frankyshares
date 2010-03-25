@@ -1,9 +1,14 @@
 # encoding: UTF-8
+begin
+  require File.expand_path('.bundle/environment', __FILE__)
+rescue LoadError
+  require "bundler"
+  Bundler.setup # FIXME Load only :default gems here?
+end
 
 require 'sinatra/base'
-$LOAD_PATH << File.dirname(__FILE__) + '/lib/chronic_duration/lib'
-require 'chronic_duration'
 require 'moneta/basic_file' # gem install moneta
+require 'chronic_duration'
 
 class Frankyshares < Sinatra::Base
   include Rack::Utils
@@ -12,7 +17,7 @@ class Frankyshares < Sinatra::Base
   set :root, File.dirname(__FILE__)
   set :time_to_expire, 172800  # Two days
   set :upload_dir, self.public + "/files" # should be considered read-only
-  use_in_file_templates!
+  enable :inline_templates
   enable :static
   
   def self.meta_store

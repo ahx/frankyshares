@@ -15,31 +15,20 @@ Download and run it
 Clone git repository
     git clone git://github.com/ahaller/frankyshares.git
     
-Don't forget to checkout submodules
-    cd frankyshares
-    git submodule update --init
-    
-Run it
+Install/Check bundled gems (versions locked)
+    bundle install
 
-    rackup
-or
-    ruby frankyshares.rb
+Run it using the config.ru
+The app just works on Ruby 1.9.
 
-The app just works on Ruby 1.9. To run the tests you need the test-unit gem though.
-
-Options
+Settings
 -------
 You can set the expire time in seconds, default is two days:
     Frankyshares.:time_to_expire = 36000 # 10hours (default is two days)
 
+
 Dependencies
 ------------
-- Rack Version >= 1.0.1
-- Sinatra
-- chronic_duration (included as submoule) (git://github.com/hpoydar/chronic_duration.git)
-- Moneta (http://github.com/wycats/moneta)
-
-For testing
-- time_travel (included as submoule) (http://github.com/notahat/time_travel)
+See Gemfile
 
 Enjoy.

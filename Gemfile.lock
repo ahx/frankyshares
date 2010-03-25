@@ -1,0 +1,43 @@
+--- 
+hash: bb97d2e06b209c6eff789b4aa982b71584ad6d97
+sources: 
+- Rubygems: 
+    uri: http://rubygems.org
+specs: 
+- chronic_duration: 
+    version: 0.9.1
+- moneta: 
+    version: 0.6.0
+- rack: 
+    version: 1.1.0
+- rack-test: 
+    version: 0.5.3
+- sinatra: 
+    version: "1.0"
+- timecop: 
+    version: 0.3.4
+dependencies: 
+  rack: 
+    version: ">= 0"
+    group: 
+    - :default
+  sinatra: 
+    version: ">= 0"
+    group: 
+    - :default
+  chronic_duration: 
+    version: ">= 0"
+    group: 
+    - :default
+  moneta: 
+    version: ">= 0"
+    group: 
+    - :default
+  rack-test: 
+    version: ">= 0"
+    group: 
+    - :test
+  timecop: 
+    version: ">= 0"
+    group: 
+    - :test
