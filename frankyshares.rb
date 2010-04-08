@@ -7,32 +7,24 @@ rescue LoadError
 end
 
 require 'sinatra/base'
-require 'moneta/basic_file' # gem install moneta
 require 'chronic_duration'
 
 class Frankyshares < Sinatra::Base
   include Rack::Utils
 
-  # Options
+  # Settings
   set :root, File.dirname(__FILE__)
   set :time_to_expire, 172800  # Two days
   set :upload_dir, self.public + "/files" # should be considered read-only
   enable :inline_templates
   enable :static
-  
-  def self.meta_store
-    Moneta::BasicFile.new(:path => File.join(self.root, "meta_store"))
-  end
-  
+    
   configure do
     FileUtils.mkdir_p(self.upload_dir)
   end
   
-  before do
-    @meta_store = Frankyshares.meta_store
-  end
-  
   not_found do
+    status 404
     erb :not_found
   end 
   
@@ -43,26 +35,31 @@ class Frankyshares < Sinatra::Base
   post '/' do
     if params[:file] # fail silently if empty
       folder = add_file(params[:file][:tempfile].path, params[:file][:filename])      
-      redirect folder.sub(File.expand_path(options.upload_dir),"")
+      redirect folder.sub(File.expand_path(settings.upload_dir),"")
     end
     erb :index
   end
 
   get '/:id' do |key|
-    @meta = @meta_store[key]
-    unless @meta
-      FileUtils.rm_rf(File.join(options.upload_dir, key))
-      pass 
-    end
-    @file = @meta[:file]
-    # pass unless @file # File.exist?(@file)
+    @file = Dir.glob(File.join(settings.upload_dir, key, '*')).first    
+    not_found unless @file && File.file?(@file)
+    FileUtils.rm_rf(File.dirname(@file)) && not_found if Frankyshares.expired?(@file)
     erb :fileinfo
   end
 
-  # Helper methods...
+  # Class methods that we use in the Rake task
+  def self.expired?(file)
+    seconds_to_expire(file) < 0
+  end
+    
+  def self.seconds_to_expire(file)
+    File.mtime(file).to_i + time_to_expire - Time.now.to_i
+  end
 
+  # Helper methods...
+  
   def download_path(path)
-    path.sub(File.expand_path(options.public),"")
+    path.sub(File.expand_path(settings.public),"")
   end
 
   # Takes a number (Bytes) and returns a readable file size
@@ -80,13 +77,12 @@ class Frankyshares < Sinatra::Base
     end
   end
   
-  def expire_time_in_words(file)
-    seconds = File.mtime(file).to_i + options.time_to_expire - Time.now.to_i
+  def seconds_in_words(seconds)
     ChronicDuration.output(seconds, :format => :long)
   end
-      
-  def time_to_expire_in_words
-    ChronicDuration.output(options.time_to_expire, :format => :long)
+  
+  def expire_time_in_words(file)    
+    seconds_in_words(self.class.seconds_to_expire(file))
   end
   
   private
@@ -94,7 +90,7 @@ class Frankyshares < Sinatra::Base
   def add_file(new_file, new_filename)
     raise("Cannot add file, because it does not exist!") unless new_file && File.size?(new_file)    
     key = generate_new_id(new_filename)
-    path = File.join(options.upload_dir, key) 
+    path = File.join(settings.upload_dir, key) 
     # Make folder..
     FileUtils.mkdir_p(path)
     # move file..
@@ -102,8 +98,6 @@ class Frankyshares < Sinatra::Base
     FileUtils.mv(new_file, file)
     # FIXME This might be bad
     FileUtils.chmod(0644, File.join(path, new_filename))
-    # save meta
-    @meta_store.store(key, {:file => file}, :expires_in => options.time_to_expire)
     path
   end
   
@@ -146,7 +140,7 @@ __END__
     <p>
       <label for="file">File</label>
       <input name="file" size="30" type="file" />      
-      <p>The file will be destroyed after <%= time_to_expire_in_words %>!</p>
+      <p>The file will be destroyed after <%= seconds_in_words(settings.time_to_expire) %>!</p>
     </p>
     <p>
       <input class="upload_file" name="upload" type="submit" value="Share this file now" />
@@ -176,5 +170,5 @@ __END__
 @@ not_found
   <h2>File not found</h2>
   <p>Either you got the wrong adress or this file has expired. <br />
-    <span class="description">(Uploaded files get deleted after <%= time_to_expire_in_words %>.)</span></p>
+    <span class="description">(Files get deleted after <%= seconds_in_words(settings.time_to_expire) %>.)</span></p>
   

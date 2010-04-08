@@ -55,14 +55,12 @@ class TestFrankyshares < Test::Unit::TestCase
     assert last_response.redirect?
     follow_redirect!
     path = last_request.path
-    assert Frankyshares.meta_store.key?(path.gsub("/", ""))
     # fast-forward in time
-    Timecop.freeze(Time.now + Frankyshares.time_to_expire) do
+    Timecop.freeze(Time.now + Frankyshares.time_to_expire +1) do
       # request file info
       get path
-      assert last_response.not_found?
+      assert last_response.not_found?, "Should be 404, but was #{last_response}"
       assert !File.exist?(Frankyshares.upload_dir + path), "Folder should have been removed."
-      assert !Frankyshares.meta_store.key?(path.gsub("/", ""))
     end
   end
 end
